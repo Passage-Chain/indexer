@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1712901854723,
+      "tag": "0000_familiar_vindicator",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1715875001641,
+      "tag": "0001_dark_tinkerer",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+services:
+  api:
+    image: passage-api:${API_TAG:-latest}
+    build:
+      dockerfile: docker/Dockerfile.node
+      target: production
+      args:
+        WORKSPACE: api
+
+  indexer:
+    image: passage-indexer:${INDEXER_TAG:-latest}
+    build:
+      dockerfile: docker/Dockerfile.node
+      target: production
+      args:
+        WORKSPACE: indexer

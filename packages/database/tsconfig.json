@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "module": "Node16",
+    "noImplicitAny": false,
+    "noEmitOnError": false,
+    "strictNullChecks": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node16",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "target": "ES6",
+    "baseUrl": "./"
+  },
+  "include": ["./*"],
+  "exclude": ["node_modules", "dist"],
+  "compileOnSave": false
+}

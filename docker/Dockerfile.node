@@ -1,0 +1,45 @@
+FROM node:20-alpine AS base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+ARG WORKSPACE
+ENV WORKSPACE $WORKSPACE
+
+FROM base AS builder
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk update
+RUN apk add --no-cache libc6-compat
+
+# Set working directory
+WORKDIR /app
+COPY . .
+RUN pnpm dlx turbo prune $WORKSPACE --docker
+
+# Add lockfile and package.json's of isolated subworkspace
+FROM base AS installer
+RUN apk update
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# First install dependencies (as they change less often)
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile
+
+# Build the project and its dependencies
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+RUN pnpm turbo run build --filter=$WORKSPACE...
+
+FROM base AS production
+
+WORKDIR /app
+COPY --from=installer /app .
+
+RUN apk add --no-cache libcap; \
+    setcap cap_net_bind_service=+ep `readlink -f \`which node\``
+
+CMD cd apps/api/ && node dist/index.js

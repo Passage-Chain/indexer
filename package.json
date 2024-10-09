@@ -1,0 +1,25 @@
+{
+  "name": "passage-indexer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:check": "turbo run db:check",
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "dc:build": "docker compose -f docker-compose.build.yml build"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.2.5",
+    "turbo": "^2.0.13"
+  },
+  "packageManager": "pnpm@9.0.1"
+}
