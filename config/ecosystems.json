@@ -1,0 +1,33 @@
+{
+  "$schema": "./ecosystems.schema.json",
+  "ecosystems": [
+    {
+      "id": "strangeclan",
+      "name": "Strange Clan",
+      "collection": [
+        "pasg1kwdranvwf6vl2grh99layugwdnph6um2x0c0l8qyvrcgsjcykuhs6vaz9p",
+        "pasg1a2366fuydkz20h9q9kaxg5vqwpu8prgs6mhwn5qha3wsups0trcq5gl8d2",
+        "pasg1etxtq3v4chzn7xrah3w6ukkxy7vlc889n5ervgxz425msar6ajzs06nl8p"
+      ]
+    },
+    {
+      "id": "metahuahua",
+      "name": "MetaHuahua",
+      "collection": [
+        "pasg1y6hjq8yvqzk6al4yrjl7yjkt87ujvhaq32c0qvt7627sk0j63d2q4dhzyw"
+      ]
+    },
+    {
+      "id": "passage",
+      "name": "Passage",
+      "collection": [
+        "pasg1vm7slaygzkr3qllr8d4s6n4xq5wmvdauu3395lvkf53rhh6tgkhqtj7muv",
+        "pasg1pv56ghmgnt9sv0ry6fg3rqf6wgfnckksppltamwsdnd0e0e0kfmsd296ms",
+        "pasg1pnzsahkfp9h3gtwkuhsps6xjm5wz5885hpl27atvaqdn7e23vrdqlctc7y",
+        "pasg1387uc3z2zs3663d06f59vsn5ams2x6e33gqpghjkmhafjqsc9a3q9w4e2q",
+        "pasg1l6ut7ymdzhf38wldp0eu6ccjawgvzku69kmjl6ddjqpcm9f62gkq5ffdkp",
+        "pasg107rr2axw6afww63pjjfr7pzsalllss76xacu6kep695dyfcx6j7shpf0u5"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Awesome Akash template config",
+  "description": "A template configuration for usage in the Akash Console template gallery",
+  "type": "object",
+  "properties": {
+    "ecosystems": {
+      "description": "List of ecosystems",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "collection": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["id", "name", "collection"]
+      }
+    }
+  },
+  "required": ["ecosystems"]
+}
