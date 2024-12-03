@@ -1,5 +1,9 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { getNftBids, getNftListings, getNftSales } from "@src/nftProvider";
+import {
+  getNftBids,
+  getNftListings,
+  getNftSales,
+} from "@src/services/nft.service";
 import { OpenAPI_ExampleCollection } from "@src/utils/constants";
 import { round } from "@src/utils/math";
 import {
