@@ -10,9 +10,12 @@ export async function getEcosystems() {
   const collections = await db.select().from(collection);
   const ecosystems = response.data.ecosystems.map((ecosystem) => ({
     ...ecosystem,
-    collections: ecosystem.collections.map((collection) =>
-      mapCollection(collections.find((c) => c.address === collection))
-    ),
+    collections: ecosystem.collections
+      .map((collection) => {
+        const col = collections.find((c) => c.address === collection);
+        return col ? mapCollection(col) : null;
+      })
+      .filter((c) => c),
   }));
 
   return ecosystems;
