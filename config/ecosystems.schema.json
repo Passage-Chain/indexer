@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
-  "title": "Awesome Akash template config",
-  "description": "A template configuration for usage in the Akash Console template gallery",
+  "title": "Passage Ecosystems",
+  "description": "A list of ecosystems for the Passage NFT Marketplace.",
   "type": "object",
   "properties": {
     "ecosystems": {
@@ -12,9 +12,9 @@
         "properties": {
           "id": { "type": "string" },
           "name": { "type": "string" },
-          "collection": { "type": "array", "items": { "type": "string" } }
+          "collectiond": { "type": "array", "items": { "type": "string" } }
         },
-        "required": ["id", "name", "collection"]
+        "required": ["id", "name", "collections"]
       }
     }
   },

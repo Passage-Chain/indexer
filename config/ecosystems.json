@@ -4,7 +4,7 @@
     {
       "id": "strangeclan",
       "name": "Strange Clan",
-      "collection": [
+      "collections": [
         "pasg1kwdranvwf6vl2grh99layugwdnph6um2x0c0l8qyvrcgsjcykuhs6vaz9p",
         "pasg1a2366fuydkz20h9q9kaxg5vqwpu8prgs6mhwn5qha3wsups0trcq5gl8d2",
         "pasg1etxtq3v4chzn7xrah3w6ukkxy7vlc889n5ervgxz425msar6ajzs06nl8p"
@@ -13,14 +13,14 @@
     {
       "id": "metahuahua",
       "name": "MetaHuahua",
-      "collection": [
+      "collections": [
         "pasg1y6hjq8yvqzk6al4yrjl7yjkt87ujvhaq32c0qvt7627sk0j63d2q4dhzyw"
       ]
     },
     {
       "id": "passage",
       "name": "Passage",
-      "collection": [
+      "collections": [
         "pasg1vm7slaygzkr3qllr8d4s6n4xq5wmvdauu3395lvkf53rhh6tgkhqtj7muv",
         "pasg1pv56ghmgnt9sv0ry6fg3rqf6wgfnckksppltamwsdnd0e0e0kfmsd296ms",
         "pasg1pnzsahkfp9h3gtwkuhsps6xjm5wz5885hpl27atvaqdn7e23vrdqlctc7y",
