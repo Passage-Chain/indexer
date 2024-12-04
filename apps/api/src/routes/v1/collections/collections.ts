@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { asc, Collection, collection, count, db } from "database";
+import { mapCollection } from "@src/utils/collection.util";
+import { asc, collection, count, db } from "database";
 
 const maxLimit = 100;
 
@@ -74,26 +75,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
   });
 
   return c.json({
-    collections: collections.map((c) => ({
-      address: c.address,
-      createdHeight: c.createdHeight,
-      name: c.name,
-      symbol: c.symbol,
-      mintContract: c.mintContract,
-      marketContract: c.marketContract,
-      minter: c.minter,
-      creator: c.creator,
-      description: c.description,
-      image: c.image,
-      externalLink: c.externalLink,
-      royaltyAddress: c.royaltyAddress,
-      royaltyFee: c.royaltyFee,
-      maxNumToken: c.maxNumToken,
-      perAddressLimit: c.perAddressLimit,
-      startTime: c.startTime,
-      unitPrice: c.unitPrice,
-      unitDenom: c.unitDenom,
-    })),
+    collections: collections.map(mapCollection),
     pagination: {
       total: totalCount,
     },

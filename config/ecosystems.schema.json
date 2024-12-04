@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Passage Ecosystems",
+  "description": "A list of ecosystems for the Passage NFT Marketplace.",
+  "type": "object",
+  "properties": {
+    "ecosystems": {
+      "description": "List of ecosystems",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "collectiond": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["id", "name", "collections"]
+      }
+    }
+  },
+  "required": ["ecosystems"]
+}
