@@ -14,6 +14,7 @@ import { block } from "./block";
 import { nftBid } from "./nftBid";
 import { nftTransfer } from "./nftTransfer";
 import { nftListing } from "./nftListing";
+import { nftTrait } from "./nftTrait";
 
 export const nft = pgTable(
   "nft",
@@ -21,6 +22,13 @@ export const nft = pgTable(
     id: uuid("id").defaultRandom().primaryKey().notNull(),
     tokenId: integer("token_id").notNull(),
     owner: varchar("owner", { length: 255 }),
+    image: varchar("image", { length: 255 }),
+    name: varchar("name", { length: 255 }),
+    description: varchar("description", { length: 1000 }),
+    externalUrl: varchar("external_url", { length: 255 }),
+    backgroundUrl: varchar("background_url", { length: 255 }),
+    animationUrl: varchar("animation_url", { length: 255 }),
+    youtubeUrl: varchar("youtube_url", { length: 255 }),
     metadata: json("metadata").notNull(),
     createdOnBlockHeight: integer("created_on_block_height").references(
       () => block.height,
@@ -77,6 +85,7 @@ export const nftRelations = relations(nft, ({ one, many }) => ({
   bids: many(nftBid),
   transfers: many(nftTransfer),
   listings: many(nftListing),
+  traits: many(nftTrait),
 }));
 
 export type Nft = typeof nft.$inferSelect;

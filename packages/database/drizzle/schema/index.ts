@@ -18,3 +18,4 @@ export * from "./nftListing";
 export * from "./nftTransfer";
 export * from "./whiteList";
 export * from "./whiteListMember";
+export * from "./nftTrait";
