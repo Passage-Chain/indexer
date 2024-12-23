@@ -70,6 +70,24 @@ export const NftAcceptCollectionBidSchema = z.object({
   })
 });
 
+export const NftMetadataSchema = z.object({
+  image: z.string(),
+  image_data: z.string(),
+  name: z.string(),
+  description: z.string(),
+  external_url: z.string(),
+  background_color: z.string(),
+  animation_url: z.string(),
+  youtube_url: z.string(),
+  attributes: z.array(
+    z.object({
+      display_type: z.string(),
+      trait_type: z.string(),
+      value: z.string()
+    })
+  )
+});
+
 export type NftMintTx = z.infer<typeof NftMintTxSchema>;
 export type NftSetAskTx = z.infer<typeof NftSetAskSchema>;
 export type NftRemoveAskTx = z.infer<typeof NftRemoveAskSchema>;
@@ -80,3 +98,4 @@ export type NftMintToTx = z.infer<typeof NftMintToSchema>;
 export type NftCollectionBidTx = z.infer<typeof NftCollectionBidSchema>;
 export type NftRemoveCollectionBidTx = z.infer<typeof NftRemoveCollectionBidSchema>;
 export type NftAcceptCollectionBidTx = z.infer<typeof NftAcceptCollectionBidSchema>;
+export type NftMetadataTx = z.infer<typeof NftMetadataSchema>;

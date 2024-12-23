@@ -26,7 +26,7 @@ export const nft = pgTable(
     name: varchar("name", { length: 255 }),
     description: varchar("description", { length: 1000 }),
     externalUrl: varchar("external_url", { length: 255 }),
-    backgroundUrl: varchar("background_url", { length: 255 }),
+    backgroundColor: varchar("background_color", { length: 255 }),
     animationUrl: varchar("animation_url", { length: 255 }),
     youtubeUrl: varchar("youtube_url", { length: 255 }),
     metadata: json("metadata").notNull(),

@@ -17,7 +17,9 @@ import {
   nftTransfer,
   nftListing,
   isNotNull,
-  nftCollectionBid
+  nftCollectionBid,
+  Nft,
+  nftTrait
 } from "database";
 import { MsgExecuteContract, MsgInstantiateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
@@ -45,6 +47,7 @@ import {
 import {
   NftAcceptCollectionBidSchema,
   NftCollectionBidSchema,
+  NftMetadataSchema,
   NftMintToSchema,
   NftMintTxSchema,
   NftRemoveAskSchema,
@@ -343,15 +346,21 @@ export class ContractIndexer extends Indexer {
       throw new Error(`Collection not found for mint contract ${collectionContract}`);
     }
 
-    await dbTransaction.insert(nft).values(
-      collectionMigration.migrate.migrations.map((token_migration) => ({
-        tokenId: parseTokenId(token_migration.token_id),
-        owner: token_migration.owner,
-        metadata: token_migration.extension,
-        collection: dbCollection.address,
-        createdOnBlockHeight: height
-      }))
-    );
+    debugger;
+
+    for (const token_migration of collectionMigration.migrate.migrations) {
+      const dbNft = await dbTransaction
+        .insert(nft)
+        .values({
+          tokenId: parseTokenId(token_migration.token_id),
+          owner: token_migration.owner,
+          metadata: token_migration.extension,
+          collection: dbCollection.address,
+          createdOnBlockHeight: height
+        })
+        .returning();
+      await this.insertNftTraits(dbTransaction, dbNft[0], height, token_migration.extension);
+    }
   }
 
   private async insertOrUpdateCollectionMigrationData(
@@ -369,8 +378,10 @@ export class ContractIndexer extends Indexer {
       throw new Error(`Collection not found for mint contract ${collectionContract}`);
     }
 
+    debugger;
+
     for (const token_migration of collectionMigrationData.migrate_data.migrations.tokens) {
-      await dbTransaction
+      const dbNft = await dbTransaction
         .insert(nft)
         .values({
           tokenId: token_migration.token_id,
@@ -384,7 +395,10 @@ export class ContractIndexer extends Indexer {
           set: {
             metadata: token_migration.metadata
           }
-        });
+        })
+        .returning();
+
+      await this.insertNftTraits(dbTransaction, dbNft[0], height, token_migration.metadata);
     }
   }
 
@@ -397,8 +411,10 @@ export class ContractIndexer extends Indexer {
       throw new Error(`Collection not found for mint contract ${mintContract}`);
     }
 
+    debugger;
+
     for (const token_metadata of collectionMetadata.upsert_token_metadatas.token_metadatas) {
-      await dbTransaction
+      const dbNft = await dbTransaction
         .insert(nft)
         .values({
           tokenId: token_metadata.token_id,
@@ -411,7 +427,10 @@ export class ContractIndexer extends Indexer {
           set: {
             metadata: token_metadata.metadata
           }
-        });
+        })
+        .returning();
+
+      await this.insertNftTraits(dbTransaction, dbNft[0], height, token_metadata.metadata);
     }
   }
 
@@ -858,6 +877,56 @@ export class ContractIndexer extends Indexer {
         owner: buyer
       })
       .where(eq(nft.id, dbNft.id));
+  }
+
+  private async insertNftTraits(dbTransaction: DbTransaction, dbNft: Nft, height: number, metadata: any) {
+    const _metadata = NftMetadataSchema.safeParse(metadata);
+
+    if (!_metadata.success) {
+      throw new Error(`Invalid metadata for ${dbNft.id}`);
+    }
+
+    const { data } = _metadata;
+
+    await dbTransaction
+      .update(nft)
+      .set({
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        externalUrl: data.external_url,
+        backgroundColor: data.background_color,
+        animationUrl: data.animation_url,
+        youtubeUrl: data.youtube_url
+      })
+      .where(eq(nft.id, dbNft.id));
+
+    for (const trait of data.attributes) {
+      const existingTrait = await dbTransaction
+        .select()
+        .from(nftTrait)
+        .innerJoin(nft, eq(nftTrait.nftId, nft.id))
+        .innerJoin(collection, eq(nft.collection, collection.address))
+        .where(
+          and(
+            eq(collection.address, dbNft.collection as string),
+            eq(nftTrait.traitType, trait.trait_type),
+            eq(nftTrait.traitValue, trait.value),
+            eq(nftTrait.displayType, trait.display_type)
+          )
+        );
+
+      if (existingTrait.length > 0) {
+        continue;
+      }
+
+      await dbTransaction.insert(nftTrait).values({
+        nftId: dbNft.id,
+        displayType: trait.display_type,
+        traitType: trait.trait_type,
+        traitValue: trait.value
+      });
+    }
   }
 
   public async afterEveryBlock(
