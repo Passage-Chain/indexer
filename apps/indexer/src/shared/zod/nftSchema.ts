@@ -71,14 +71,14 @@ export const NftAcceptCollectionBidSchema = z.object({
 });
 
 export const NftMetadataSchema = z.object({
-  image: z.string(),
-  image_data: z.string(),
-  name: z.string(),
-  description: z.string(),
-  external_url: z.string(),
-  background_color: z.string(),
-  animation_url: z.string(),
-  youtube_url: z.string(),
+  image: z.string().nullable().optional(),
+  image_data: z.string().nullable().optional(),
+  name: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  external_url: z.string().nullable().optional(),
+  background_color: z.string().nullable().optional(),
+  animation_url: z.string().nullable().optional(),
+  youtube_url: z.string().nullable().optional(),
   attributes: z.array(
     z.object({
       display_type: z.string(),
