@@ -912,6 +912,15 @@ export class ContractIndexer extends Indexer {
         );
 
       if (existingTrait.length > 0) {
+        const dbNftToTrait = await dbTransaction
+          .select()
+          .from(nftToTrait)
+          .where(and(eq(nftToTrait.nftId, dbNft.id), eq(nftToTrait.traitId, existingTrait[0].nft_trait.id)));
+
+        if (dbNftToTrait.length > 0) {
+          continue;
+        }
+
         await dbTransaction.insert(nftToTrait).values({
           nftId: dbNft.id,
           traitId: existingTrait[0].nft_trait.id
