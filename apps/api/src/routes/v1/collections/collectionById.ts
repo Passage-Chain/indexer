@@ -1,4 +1,5 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { getCollectionStats } from "@src/services/collection.service";
 import { OpenAPI_ExampleCollection } from "@src/utils/constants";
 import { db, eq } from "database";
 
@@ -10,9 +11,9 @@ const route = createRoute({
     params: z.object({
       address: z.string().openapi({
         description: "Collection Address",
-        example: OpenAPI_ExampleCollection,
-      }),
-    }),
+        example: OpenAPI_ExampleCollection
+      })
+    })
   },
   responses: {
     404: { description: "Collection not found" },
@@ -26,6 +27,7 @@ const route = createRoute({
             name: z.string(),
             symbol: z.string(),
             mintContract: z.string().nullable(),
+            marketContract: z.string().nullable(),
             minter: z.string(),
             creator: z.string(),
             description: z.string(),
@@ -35,26 +37,52 @@ const route = createRoute({
             royaltyFee: z.string(),
             maxNumToken: z.number().nullable(),
             perAddressLimit: z.number().nullable(),
-            startTime: z.string(),
-            unitPrice: z.number().nullable(),
+            startTime: z.string().nullable(),
+            unitPrice: z.string().nullable(),
             unitDenom: z.string().nullable(),
-          }),
-        },
-      },
-    },
-  },
+            nftCount: z.number(),
+            uniqueOwnerCount: z.number(),
+            floorPrice: z.string().nullable(),
+            saleCount: z.number(),
+            saleVolume: z.object({
+              upasg: z.string().nullable(),
+              usd: z.string().nullable()
+            }),
+            saleCount24hAgo: z.number(),
+            saleVolume24hAgo: z.object({
+              upasg: z.string().nullable(),
+              usd: z.string().nullable()
+            }),
+            saleCount7dAgo: z.number(),
+            saleVolume7dAgo: z.object({
+              upasg: z.string().nullable(),
+              usd: z.string().nullable()
+            }),
+            saleCount30dAgo: z.number(),
+            saleVolume30dAgo: z.object({
+              upasg: z.string().nullable(),
+              usd: z.string().nullable()
+            }),
+            listedTokenCount: z.number()
+          })
+        }
+      }
+    }
+  }
 });
 
 export default new OpenAPIHono().openapi(route, async (c) => {
   const collectionAddress = c.req.valid("param").address;
 
   const collection = await db.query.collection.findFirst({
-    where: (table) => eq(table.address, collectionAddress),
+    where: (table) => eq(table.address, collectionAddress)
   });
 
   if (!collection) {
     return c.text("Collection not found", 404);
   }
+
+  const stats = await getCollectionStats(collectionAddress);
 
   return c.json({
     address: collection.address,
@@ -62,6 +90,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
     name: collection.name,
     symbol: collection.symbol,
     mintContract: collection.mintContract,
+    marketContract: collection.marketContract,
     minter: collection.minter,
     creator: collection.creator,
     description: collection.description,
@@ -74,5 +103,6 @@ export default new OpenAPIHono().openapi(route, async (c) => {
     startTime: collection.startTime,
     unitPrice: collection.unitPrice,
     unitDenom: collection.unitDenom,
+    ...stats
   });
 });

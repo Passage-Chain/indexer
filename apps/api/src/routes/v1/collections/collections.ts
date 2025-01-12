@@ -10,17 +10,9 @@ const route = createRoute({
   summary: "Get a list of collections.",
   request: {
     query: z.object({
-      skip: z
-        .string()
-        .optional()
-        .default("0")
-        .openapi({ description: "NFTs to skip" }),
-      limit: z
-        .string()
-        .optional()
-        .default(maxLimit.toString())
-        .openapi({ description: "NFTs to return", maximum: maxLimit }),
-    }),
+      skip: z.string().optional().default("0").openapi({ description: "NFTs to skip" }),
+      limit: z.string().optional().default(maxLimit.toString()).openapi({ description: "NFTs to return", maximum: maxLimit })
+    })
   },
   responses: {
     200: {
@@ -45,39 +37,63 @@ const route = createRoute({
                 royaltyFee: z.string(),
                 maxNumToken: z.number().nullable(),
                 perAddressLimit: z.number().nullable(),
-                startTime: z.string(),
-                unitPrice: z.number().nullable(),
+                startTime: z.string().nullable(),
+                unitPrice: z.string().nullable(),
                 unitDenom: z.string().nullable(),
+                nftCount: z.number(),
+                uniqueOwnerCount: z.number(),
+                floorPrice: z.string().nullable(),
+                saleCount: z.number(),
+                saleVolume: z.object({
+                  upasg: z.string().nullable(),
+                  usd: z.string().nullable()
+                }),
+                saleCount24hAgo: z.number(),
+                saleVolume24hAgo: z.object({
+                  upasg: z.string().nullable(),
+                  usd: z.string().nullable()
+                }),
+                saleCount7dAgo: z.number(),
+                saleVolume7dAgo: z.object({
+                  upasg: z.string().nullable(),
+                  usd: z.string().nullable()
+                }),
+                saleCount30dAgo: z.number(),
+                saleVolume30dAgo: z.object({
+                  upasg: z.string().nullable(),
+                  usd: z.string().nullable()
+                }),
+                listedTokenCount: z.number()
               })
             ),
             pagination: z.object({
-              total: z.number(),
-            }),
-          }),
-        },
-      },
-    },
-  },
+              total: z.number()
+            })
+          })
+        }
+      }
+    }
+  }
 });
 
 export default new OpenAPIHono().openapi(route, async (c) => {
   const skip = parseInt(c.req.valid("query").skip);
   const limit = Math.min(maxLimit, parseInt(c.req.valid("query").limit));
 
-  const [{ count: totalCount }] = await db
-    .select({ count: count() })
-    .from(collection);
+  const [{ count: totalCount }] = await db.select({ count: count() }).from(collection);
 
   const collections = await db.query.collection.findMany({
     offset: skip,
     limit: limit,
-    orderBy: [asc(collection.createdHeight), asc(collection.address)],
+    orderBy: [asc(collection.createdHeight), asc(collection.address)]
   });
 
+  const mappedCollections = await Promise.all(collections.map(mapCollection));
+
   return c.json({
-    collections: collections.map(mapCollection),
+    collections: mappedCollections,
     pagination: {
-      total: totalCount,
-    },
+      total: totalCount
+    }
   });
 });

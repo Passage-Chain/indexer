@@ -1,21 +1,19 @@
+import axios from "axios";
 import { Ecosystem } from "@src/types";
 import { mapCollection } from "@src/utils/collection.util";
-import axios from "axios";
-import { db, collection } from "database";
+import { db, collection, inArray } from "database";
 
 export async function getEcosystems() {
-  const response = await axios.get<{ ecosystems: Ecosystem[] }>(
-    "https://raw.githubusercontent.com/Passage-Chain/indexer/main/config/ecosystems.json"
-  );
-  const collections = await db.select().from(collection);
+  const response = await axios.get<{ ecosystems: Ecosystem[] }>("https://raw.githubusercontent.com/Passage-Chain/indexer/main/config/ecosystems.json");
+
+  const collectionIds = response.data.ecosystems.flatMap((ecosystem) => ecosystem.collections);
+
+  const collections = await db.select().from(collection).where(inArray(collection.address, collectionIds));
+  const mappedCollections = await Promise.all(collections.map(mapCollection));
+
   const ecosystems = response.data.ecosystems.map((ecosystem) => ({
     ...ecosystem,
-    collections: ecosystem.collections
-      .map((collection) => {
-        const col = collections.find((c) => c.address === collection);
-        return col ? mapCollection(col) : null;
-      })
-      .filter((c) => c),
+    collections: ecosystem.collections.map((collection) => mappedCollections.find((c) => c.address === collection)).filter((c) => c)
   }));
 
   return ecosystems;
