@@ -1,0 +1,28 @@
+name: Indexer CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Check for changes in indexer folder
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            indexer:
+              - 'apps/indexer/**'
+              - 'packages/database/**'
+
+      - name: Build the Docker image
+        if: steps.filter.outputs.indexer == 'true'
+        run: npm run dc:build -- indexer
