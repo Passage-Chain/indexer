@@ -5,7 +5,6 @@ import {
   integer,
   index,
   text,
-  bigserial,
 } from "drizzle-orm/pg-core";
 import { transactionEvent } from "./transactionEvent";
 import { relations } from "drizzle-orm";

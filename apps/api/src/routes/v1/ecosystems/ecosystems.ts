@@ -33,24 +33,48 @@ const route = createRoute({
                     royaltyFee: z.string(),
                     maxNumToken: z.number().nullable(),
                     perAddressLimit: z.number().nullable(),
-                    startTime: z.string(),
-                    unitPrice: z.number().nullable(),
+                    startTime: z.string().nullable(),
+                    unitPrice: z.string().nullable(),
                     unitDenom: z.string().nullable(),
+                    nftCount: z.number(),
+                    uniqueOwnerCount: z.number(),
+                    floorPrice: z.string().nullable(),
+                    saleCount: z.number(),
+                    saleVolume: z.object({
+                      upasg: z.string().nullable(),
+                      usd: z.string().nullable()
+                    }),
+                    saleCount24hAgo: z.number(),
+                    saleVolume24hAgo: z.object({
+                      upasg: z.string().nullable(),
+                      usd: z.string().nullable()
+                    }),
+                    saleCount7dAgo: z.number(),
+                    saleVolume7dAgo: z.object({
+                      upasg: z.string().nullable(),
+                      usd: z.string().nullable()
+                    }),
+                    saleCount30dAgo: z.number(),
+                    saleVolume30dAgo: z.object({
+                      upasg: z.string().nullable(),
+                      usd: z.string().nullable()
+                    }),
+                    listedTokenCount: z.number()
                   })
-                ),
+                )
               })
-            ),
-          }),
-        },
-      },
-    },
-  },
+            )
+          })
+        }
+      }
+    }
+  }
 });
 
 export default new OpenAPIHono().openapi(route, async (c) => {
   const ecosystems = await getEcosystems();
 
   return c.json({
-    ecosystems,
+    ecosystems
   });
 });

@@ -16,6 +16,7 @@
     "@hono/zod-openapi": "^0.14.4",
     "axios": "^1.6.8",
     "database": "workspace:*",
+    "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.32.0",
     "hono": "^4.1.7",
