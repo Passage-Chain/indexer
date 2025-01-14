@@ -1,22 +1,12 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { OpenAPI_ExampleCollection } from "@src/utils/constants";
-import {
-  and,
-  asc,
-  count,
-  db,
-  desc,
-  eq,
-  isNotNull,
-  nft,
-  nftListing,
-} from "database";
+import { and, asc, count, db, desc, eq, isNotNull, isNull, nft, nftListing } from "database";
 
 const maxLimit = 100;
 
 const sortOptions = {
   priceAsc: asc(nftListing.forSalePrice),
-  priceDesc: desc(nftListing.forSalePrice),
+  priceDesc: desc(nftListing.forSalePrice)
 };
 
 const route = createRoute({
@@ -27,35 +17,27 @@ const route = createRoute({
     params: z.object({
       address: z.string().openapi({
         description: "Collection Address",
-        example: OpenAPI_ExampleCollection,
-      }),
+        example: OpenAPI_ExampleCollection
+      })
     }),
     query: z.object({
-      skip: z
-        .string()
-        .optional()
-        .default("0")
-        .openapi({ description: "NFTs to skip" }),
-      limit: z
-        .string()
-        .optional()
-        .default(maxLimit.toString())
-        .openapi({ description: "NFTs to return", maximum: maxLimit }),
-      forSale: z
+      skip: z.string().optional().default("0").openapi({ description: "NFTs to skip" }),
+      limit: z.string().optional().default(maxLimit.toString()).openapi({ description: "NFTs to return", maximum: maxLimit }),
+      saleType: z
         .string()
         .optional()
         .openapi({
-          description: "Only show NFTs for sale",
-          enum: ["true", "false"],
+          description: "Filter by sale type",
+          enum: ["LIVE_AUCTION", "FIXED_PRICE", "NOT_FOR_SALE"]
         }),
       sort: z
         .string()
         .optional()
         .openapi({
           description: "Sort order",
-          enum: Object.keys(sortOptions),
-        }),
-    }),
+          enum: Object.keys(sortOptions)
+        })
+    })
   },
   responses: {
     200: {
@@ -72,29 +54,30 @@ const route = createRoute({
                 mintedOnBlockHeight: z.number(),
                 mintPrice: z.number(),
                 mintDenom: z.string(),
+                saleType: z.enum(["LIVE_AUCTION", "FIXED_PRICE", "NOT_FOR_SALE"]),
                 listedPrice: z.number().nullable(),
-                listedDenom: z.string().nullable(),
+                listedDenom: z.string().nullable()
               })
             ),
             pagination: z.object({
-              total: z.number(),
-            }),
-          }),
-        },
-      },
-    },
-  },
+              total: z.number()
+            })
+          })
+        }
+      }
+    }
+  }
 });
 
 export default new OpenAPIHono().openapi(route, async (c) => {
   const collectionAddress = c.req.valid("param").address;
   const skip = parseInt(c.req.valid("query").skip);
   const limit = Math.min(maxLimit, parseInt(c.req.valid("query").limit));
-  const forSale = c.req.valid("query").forSale === "true";
+  const saleType = c.req.valid("query").saleType;
   const sort = sortOptions[c.req.valid("query").sort] || asc(nft.tokenId);
 
   const collection = await db.query.collection.findFirst({
-    where: (table) => eq(table.address, collectionAddress),
+    where: (table) => eq(table.address, collectionAddress)
   });
 
   if (!collection) {
@@ -107,7 +90,8 @@ export default new OpenAPIHono().openapi(route, async (c) => {
     .where(
       and(
         eq(nft.collection, collectionAddress),
-        isNotNull(nft.activeListingId).if(forSale)
+        isNotNull(nft.activeListingId).if(saleType === "FIXED_PRICE"),
+        isNull(nft.activeListingId).if(saleType === "NOT_FOR_SALE")
       )
     );
 
@@ -117,7 +101,8 @@ export default new OpenAPIHono().openapi(route, async (c) => {
     .where(
       and(
         eq(nft.collection, collectionAddress),
-        isNotNull(nft.activeListingId).if(forSale)
+        isNotNull(nft.activeListingId).if(saleType === "FIXED_PRICE"),
+        isNull(nft.activeListingId).if(saleType === "NOT_FOR_SALE")
       )
     )
     .leftJoin(nftListing, eq(nftListing.id, nft.activeListingId))
@@ -134,11 +119,12 @@ export default new OpenAPIHono().openapi(route, async (c) => {
       mintedOnBlockHeight: nft.mintedOnBlockHeight,
       mintPrice: nft.mintPrice,
       mintDenom: nft.mintDenom,
+      saleType: activeListing ? "FIXED_PRICE" : "NOT_FOR_SALE",
       listedPrice: activeListing?.forSalePrice || null,
-      listedDenom: activeListing?.forSaleDenom || null,
+      listedDenom: activeListing?.forSaleDenom || null
     })),
     pagination: {
-      total: totalCount,
-    },
+      total: totalCount
+    }
   });
 });
