@@ -40,6 +40,9 @@ const route = createRoute({
     })
   },
   responses: {
+    404: {
+      description: "Collection not found"
+    },
     200: {
       description: "List of nfts",
       content: {
