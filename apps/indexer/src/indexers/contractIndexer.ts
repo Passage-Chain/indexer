@@ -20,7 +20,9 @@ import {
   nftCollectionBid,
   Nft,
   nftTrait,
-  nftToTrait
+  nftToTrait,
+  whitelist,
+  whitelistMember
 } from "database";
 import { MsgExecuteContract, MsgInstantiateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
@@ -43,7 +45,11 @@ import {
   CollectionUpdateConfigSchema,
   CollectionUpdateConfigTx,
   CollectionSetAdminSchema,
-  CollectionWithdrawSchema
+  CollectionWithdrawSchema,
+  WhitelistInfoSchema,
+  WhitelistInfoTx,
+  WhitelistAddMembersSchema,
+  WhitelistAddMembersTx
 } from "@src/shared/zod/collection";
 import {
   NftAcceptCollectionBidSchema,
@@ -95,6 +101,9 @@ export class ContractIndexer extends Indexer {
       ),
       createZodHandler(CollectionMarketplaceTxSchema, (collectionMarketplaceTx) =>
         this.insertMarketplaceData(height, dbTransaction, collectionMarketplaceTx, txEvents)
+      ),
+      createZodHandler(WhitelistInfoSchema, (whitelistInfo) =>
+        this.handleCreateWhitelist(height, decodedMessage.admin, decodedMessage.label, whitelistInfo, dbTransaction, txEvents)
       )
     ];
 
@@ -203,7 +212,10 @@ export class ContractIndexer extends Indexer {
         console.log("Ignored Type: CollectionMigrationMintableTokensTxSchema")
       ),
       createZodHandler(CollectionSetAdminSchema, (collectionSetAdmin) => console.log("Ignored Type: CollectionSetAdminSchema")),
-      createZodHandler(CollectionWithdrawSchema, (collectionWithdraw) => console.log("Ignored Type: CollectionWithdrawSchema"))
+      createZodHandler(CollectionWithdrawSchema, (collectionWithdraw) => console.log("Ignored Type: CollectionWithdrawSchema")),
+      createZodHandler(WhitelistAddMembersSchema, (whitelistAddMembers) =>
+        this.handleAddWhitelistMembers(dbTransaction, decodedMessage.contract, whitelistAddMembers, height)
+      )
     ];
 
     const matchingHandler = handlers.find((handler) => handler.type.safeParse(jsonData).success);
@@ -231,8 +243,8 @@ export class ContractIndexer extends Indexer {
       description: collectionTx.collection_info.description,
       image: collectionTx.collection_info.image,
       externalLink: collectionTx.collection_info.external_link,
-      royaltyAddress: collectionTx.collection_info.royalty_info.payment_address,
-      royaltyFee: collectionTx.collection_info.royalty_info.share
+      royaltyAddress: collectionTx.collection_info.royalty_info?.payment_address,
+      royaltyFee: collectionTx.collection_info.royalty_info?.share
     });
   }
 
@@ -942,6 +954,84 @@ export class ContractIndexer extends Indexer {
         });
       }
     }
+  }
+
+  private async handleCreateWhitelist(
+    height: number,
+    admin: string,
+    label: string,
+    whitelistInfo: WhitelistInfoTx,
+    dbTransaction: DbTransaction,
+    txEvents: TransactionEventWithAttributes[]
+  ) {
+    debugger;
+    const whitelistAddress = getEventAttributeValue(txEvents, "instantiate", "_contract_address");
+
+    if (!whitelistAddress) throw new Error("Whitelist address not found");
+    if (!admin) throw new Error("Admin not found");
+
+    // TODO: There's no way to identify the whitelist to a collection, so we're just going to assume the symbol is in the label like so
+    const symbol = label.split("WHITELIST:")[1]?.trim(); // WHITELIST: IDX
+    const dbCollection = await dbTransaction.query.collection.findFirst({
+      where: (collection, { or, eq }) => and(or(eq(collection.creator, admin), eq(collection.minter, admin)), eq(collection.symbol, symbol))
+    });
+
+    if (!dbCollection) {
+      throw new Error(`Collection not found for admin ${admin}`);
+    }
+
+    const [insertedWhitelist] = await dbTransaction
+      .insert(whitelist)
+      .values({
+        admin,
+        address: whitelistAddress,
+        collection: dbCollection.address,
+        endTime: new Date(parseInt(whitelistInfo.end_time) / 1_000_000),
+        startTime: new Date(parseInt(whitelistInfo.start_time) / 1_000_000),
+        memberLimit: whitelistInfo.member_limit,
+        numMembers: whitelistInfo.members.length,
+        perAddressLimit: whitelistInfo.per_address_limit,
+        unitPrice: parseInt(whitelistInfo.unit_price.amount)
+      })
+      .returning();
+
+    // Insert whitelist members
+    if (whitelistInfo.members.length > 0) {
+      await dbTransaction.insert(whitelistMember).values(
+        whitelistInfo.members.map((address) => ({
+          address,
+          whitelist: insertedWhitelist.id
+        }))
+      );
+    }
+  }
+
+  private async handleAddWhitelistMembers(dbTransaction: DbTransaction, whitelistAddress: string, whitelistAddMembers: WhitelistAddMembersTx, height: number) {
+    debugger;
+    // Get the whitelist from the database
+    const dbWhitelist = await dbTransaction.query.whitelist.findFirst({
+      where: (whitelist, { eq }) => eq(whitelist.address, whitelistAddress)
+    });
+
+    if (!dbWhitelist) {
+      throw new Error(`Whitelist not found for address ${whitelistAddress}`);
+    }
+
+    // Insert new whitelist members
+    await dbTransaction.insert(whitelistMember).values(
+      whitelistAddMembers.add_members.to_add.map((address) => ({
+        address,
+        whitelist: dbWhitelist.id
+      }))
+    );
+
+    // Update the number of members in the whitelist
+    await dbTransaction
+      .update(whitelist)
+      .set({
+        numMembers: dbWhitelist.numMembers + whitelistAddMembers.add_members.to_add.length
+      })
+      .where(eq(whitelist.id, dbWhitelist.id));
   }
 
   public async afterEveryBlock(

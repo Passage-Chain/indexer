@@ -14,7 +14,8 @@ import { block } from "./block";
 import { nftBid } from "./nftBid";
 import { nftTransfer } from "./nftTransfer";
 import { nftListing } from "./nftListing";
-import { nftTrait } from "./nftTrait";
+import { nftToTrait, nftTrait } from "./nftTrait";
+import { nftSale } from "./nftSale";
 
 export const nft = pgTable(
   "nft",
@@ -85,7 +86,8 @@ export const nftRelations = relations(nft, ({ one, many }) => ({
   bids: many(nftBid),
   transfers: many(nftTransfer),
   listings: many(nftListing),
-  traits: many(nftTrait),
+  nftToTraits: many(nftToTrait),
+  sales: many(nftSale),
 }));
 
 export type Nft = typeof nft.$inferSelect;

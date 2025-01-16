@@ -4,6 +4,7 @@ import nfts from "./collections/nfts";
 import nftById from "./collections/nftById";
 import nftsByOwner from "./accounts/nfts";
 import ecosystems from "./ecosystems/ecosystems";
+import collectionTraits from "./collections/collectionTraits";
 
 export default [
   collections,
@@ -12,4 +13,5 @@ export default [
   nftById,
   nftsByOwner,
   ecosystems,
+  collectionTraits,
 ];
