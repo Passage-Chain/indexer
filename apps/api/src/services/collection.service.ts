@@ -88,7 +88,6 @@ async function getSaleAndVolumeAtDate(collectionAddress: string, date?: Date) {
 }
 
 export async function getCollectionTraits(address: string, options: GetTraitsOptions): Promise<TraitStats[]> {
-  debugger;
   const collection = await db.query.collection.findFirst({
     where: (table) => eq(table.address, address)
   });
