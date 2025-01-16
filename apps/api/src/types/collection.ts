@@ -10,7 +10,16 @@ export interface TraitMetrics {
 export interface TraitStats {
   traitType: string;
   traitValue: string;
-  metrics: TraitMetrics;
+  metrics: {
+    totalSales: number;
+    volumeUsd: number;
+    volumePasg: number;
+    priceUsd: number;
+    pricePasg: number;
+    change24HourPercent: number | null;
+    change7DayPercent: number | null;
+    change30DayPercent: number | null;
+  };
 }
 
 export interface GetTraitsOptions {
