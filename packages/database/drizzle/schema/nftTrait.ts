@@ -26,14 +26,18 @@ export const nftTrait = pgTable(
 export const nftToTrait = pgTable(
   "nft_to_trait",
   {
-    nftId: uuid("nft_id").references(() => nft.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
-    traitId: uuid("trait_id").references(() => nftTrait.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+    nftId: uuid("nft_id")
+      .notNull()
+      .references(() => nft.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    traitId: uuid("trait_id")
+      .notNull()
+      .references(() => nftTrait.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.nftId, t.traitId] }),
