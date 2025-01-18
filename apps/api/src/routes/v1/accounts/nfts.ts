@@ -12,21 +12,13 @@ const route = createRoute({
     params: z.object({
       address: z.string().openapi({
         description: "Account Address",
-        example: OpenAPI_ExampleOwner,
-      }),
+        example: OpenAPI_ExampleOwner
+      })
     }),
     query: z.object({
-      skip: z
-        .string()
-        .optional()
-        .default("0")
-        .openapi({ description: "NFTs to skip" }),
-      limit: z
-        .string()
-        .optional()
-        .default(maxLimit.toString())
-        .openapi({ description: "NFTs to return", maximum: maxLimit }),
-    }),
+      skip: z.string().optional().default("0").openapi({ description: "NFTs to skip" }),
+      limit: z.string().optional().default(maxLimit.toString()).openapi({ description: "NFTs to return", maximum: maxLimit })
+    })
   },
   responses: {
     200: {
@@ -36,29 +28,29 @@ const route = createRoute({
           schema: z.object({
             nfts: z.array(
               z.object({
-                tokenId: z.string(),
+                tokenId: z.number(),
                 owner: z.string(),
                 collection: z.object({
                   address: z.string(),
-                  name: z.string(),
+                  name: z.string()
                 }),
                 metadata: z.unknown({ description: "JSON Metadata" }),
                 createdOnBlockHeight: z.number(),
                 mintedOnBlockHeight: z.number(),
-                mintPrice: z.number(),
+                mintPrice: z.string(),
                 mintDenom: z.string(),
-                listedPrice: z.number().nullable(),
-                listedDenom: z.string().nullable(),
+                listedPrice: z.string().nullable(),
+                listedDenom: z.string().nullable()
               })
             ),
             pagination: z.object({
-              total: z.number(),
-            }),
-          }),
-        },
-      },
-    },
-  },
+              total: z.number()
+            })
+          })
+        }
+      }
+    }
+  }
 });
 
 export default new OpenAPIHono().openapi(route, async (c) => {
@@ -66,10 +58,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
   const skip = parseInt(c.req.valid("query").skip);
   const limit = Math.min(maxLimit, parseInt(c.req.valid("query").limit));
 
-  const [{ count: totalCount }] = await db
-    .select({ count: count() })
-    .from(nft)
-    .where(eq(nft.owner, accountAddress));
+  const [{ count: totalCount }] = await db.select({ count: count() }).from(nft).where(eq(nft.owner, accountAddress));
 
   const nfts = await db
     .select()
@@ -87,7 +76,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
       owner: nft.owner,
       collection: {
         address: nft.collection,
-        name: collection.name,
+        name: collection.name
       },
       metadata: nft.metadata,
       createdOnBlockHeight: nft.createdOnBlockHeight,
@@ -95,10 +84,10 @@ export default new OpenAPIHono().openapi(route, async (c) => {
       mintPrice: nft.mintPrice,
       mintDenom: nft.mintDenom,
       listedPrice: activeListing?.forSalePrice || null,
-      listedDenom: activeListing?.forSaleDenom || null,
+      listedDenom: activeListing?.forSaleDenom || null
     })),
     pagination: {
-      total: totalCount,
-    },
+      total: totalCount
+    }
   });
 });

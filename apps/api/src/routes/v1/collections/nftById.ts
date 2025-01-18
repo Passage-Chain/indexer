@@ -1,19 +1,8 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import {
-  getNftBids,
-  getNftListings,
-  getNftSales,
-} from "@src/services/nft.service";
+import { getNftBids, getNftListings, getNftSales } from "@src/services/nft.service";
 import { OpenAPI_ExampleCollection } from "@src/utils/constants";
 import { round } from "@src/utils/math";
-import {
-  db,
-  and,
-  eq,
-  nft as nftTable,
-  block as blockTable,
-  day as dayTable,
-} from "database";
+import { db, and, eq, nft as nftTable, block as blockTable, day as dayTable } from "database";
 
 const route = createRoute({
   method: "get",
@@ -23,14 +12,15 @@ const route = createRoute({
     params: z.object({
       address: z.string().openapi({
         description: "Collection Address",
-        example: OpenAPI_ExampleCollection,
+        example: OpenAPI_ExampleCollection
       }),
-      tokenId: z
-        .string()
-        .openapi({ description: "Token ID", example: "301", type: "number" }),
-    }),
+      tokenId: z.string().openapi({ description: "Token ID", example: "301", type: "number" })
+    })
   },
   responses: {
+    404: {
+      description: "Collection or NFT not found"
+    },
     200: {
       description: "NFT details",
       content: {
@@ -50,7 +40,7 @@ const route = createRoute({
                 datetime: z.string().nullable(),
                 price: z.number(),
                 denom: z.string(),
-                usdPrice: z.number().nullable(),
+                usdPrice: z.number().nullable()
               })
             ),
             listings: z.array(
@@ -58,7 +48,7 @@ const route = createRoute({
                 datetime: z.string().nullable(),
                 price: z.number(),
                 denom: z.string(),
-                usdPrice: z.number().nullable(),
+                usdPrice: z.number().nullable()
               })
             ),
             priceHistory: z.array(
@@ -68,14 +58,14 @@ const route = createRoute({
                 datetime: z.string().nullable(),
                 price: z.number(),
                 denom: z.string(),
-                usdPrice: z.number().nullable(),
+                usdPrice: z.number().nullable()
               })
-            ),
-          }),
-        },
-      },
-    },
-  },
+            )
+          })
+        }
+      }
+    }
+  }
 });
 
 export default new OpenAPIHono().openapi(route, async (c) => {
@@ -83,7 +73,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
   const tokenId = parseInt(c.req.valid("param").tokenId);
 
   const collection = await db.query.collection.findFirst({
-    where: (table) => eq(table.address, collectionAddress),
+    where: (table) => eq(table.address, collectionAddress)
   });
 
   if (!collection) {
@@ -95,12 +85,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
     .from(nftTable)
     .leftJoin(blockTable, eq(nftTable.mintedOnBlockHeight, blockTable.height))
     .leftJoin(dayTable, eq(blockTable.dayId, dayTable.id))
-    .where(
-      and(
-        eq(nftTable.collection, collectionAddress),
-        eq(nftTable.tokenId, tokenId)
-      )
-    );
+    .where(and(eq(nftTable.collection, collectionAddress), eq(nftTable.tokenId, tokenId)));
 
   if (!result) {
     return c.text("NFT not found", 404);
@@ -108,11 +93,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
 
   const { nft, block: mintedOnBlock, day: mintedOnDay } = result;
 
-  const [sales, bids, listings] = await Promise.all([
-    getNftSales(nft.id),
-    getNftBids(nft.id),
-    getNftListings(nft.id),
-  ]);
+  const [sales, bids, listings] = await Promise.all([getNftSales(nft.id), getNftBids(nft.id), getNftListings(nft.id)]);
 
   let salesEntries = sales.map((sale) => ({
     type: "sale",
@@ -120,11 +101,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
     datetime: sale.block?.datetime ?? null,
     price: sale.salePrice,
     denom: sale.saleDenom,
-    usdPrice: getUsdPrice(
-      sale.salePrice,
-      sale.saleDenom,
-      sale.block?.day.tokenPrice
-    ),
+    usdPrice: getUsdPrice(sale.salePrice, sale.saleDenom, sale.block?.day.tokenPrice)
   }));
 
   const priceHistory = mintedOnBlock
@@ -134,13 +111,9 @@ export default new OpenAPIHono().openapi(route, async (c) => {
           datetime: mintedOnBlock?.datetime ?? null,
           price: nft.mintPrice,
           denom: nft.mintDenom,
-          usdPrice: getUsdPrice(
-            nft.mintPrice,
-            nft.mintDenom,
-            mintedOnDay?.tokenPrice
-          ),
+          usdPrice: getUsdPrice(nft.mintPrice, nft.mintDenom, mintedOnDay?.tokenPrice)
         },
-        ...salesEntries,
+        ...salesEntries
       ]
     : salesEntries;
 
@@ -158,11 +131,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
       datetime: bid.block?.datetime ?? null,
       price: bid.bidPrice,
       denom: bid.bidDenom,
-      usdPrice: getUsdPrice(
-        bid.bidPrice,
-        bid.bidDenom,
-        bid.block?.day.tokenPrice
-      ),
+      usdPrice: getUsdPrice(bid.bidPrice, bid.bidDenom, bid.block?.day.tokenPrice)
     })),
     listings: listings
       .filter((x) => !x.unlistedBlockHeight) // TODO: Remove?
@@ -170,13 +139,9 @@ export default new OpenAPIHono().openapi(route, async (c) => {
         datetime: listing.block?.datetime ?? null,
         price: listing.forSalePrice,
         denom: listing.forSaleDenom,
-        usdPrice: getUsdPrice(
-          listing.forSalePrice,
-          listing.forSaleDenom,
-          listing.block?.day.tokenPrice
-        ),
+        usdPrice: getUsdPrice(listing.forSalePrice, listing.forSaleDenom, listing.block?.day.tokenPrice)
       })),
-    priceHistory: priceHistory,
+    priceHistory: priceHistory
   });
 });
 
