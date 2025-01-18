@@ -10,4 +10,6 @@ export default {
   introspect: {
     casing: "preserve",
   },
+  verbose: true,
+  strict: true
 } satisfies Config;

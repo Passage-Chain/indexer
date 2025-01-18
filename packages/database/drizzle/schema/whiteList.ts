@@ -5,6 +5,7 @@ import {
   varchar,
   timestamp,
   integer,
+  index,
 } from "drizzle-orm/pg-core";
 import { collection } from "./collection";
 
@@ -13,6 +14,7 @@ export const whitelist = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
     admin: varchar("admin", { length: 255 }).notNull(),
+    address: varchar("address", { length: 255 }).notNull(),
     collection: varchar("collection", { length: 255 }).notNull(),
     endTime: timestamp("end_time", {
       withTimezone: true,
@@ -28,7 +30,9 @@ export const whitelist = pgTable(
     unitPrice: integer("unit_price").notNull(),
   },
   (table) => {
-    return {};
+    return {
+      collection: index("whitelist_collection").on(table.collection),
+    };
   }
 );
 

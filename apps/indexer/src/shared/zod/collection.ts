@@ -9,10 +9,12 @@ export const CollectionTxSchema = z.object({
     description: z.string(),
     image: z.string().url(),
     external_link: z.string().url(),
-    royalty_info: z.object({
-      payment_address: z.string(),
-      share: z.string()
-    })
+    royalty_info: z
+      .object({
+        payment_address: z.string(),
+        share: z.string()
+      })
+      .nullable()
   })
 });
 
@@ -133,6 +135,24 @@ export const CollectionWithdrawSchema = z.object({
   })
 });
 
+export const WhitelistInfoSchema = z.object({
+  end_time: z.string(),
+  member_limit: z.number(),
+  members: z.array(z.string()),
+  per_address_limit: z.number(),
+  start_time: z.string(),
+  unit_price: z.object({
+    amount: z.string(),
+    denom: z.string()
+  })
+});
+
+export const WhitelistAddMembersSchema = z.object({
+  add_members: z.object({
+    to_add: z.array(z.string())
+  })
+});
+
 export type CollectionTx = z.infer<typeof CollectionTxSchema>;
 export type CollectionMinterTx = z.infer<typeof CollectionMinterTxSchema>;
 export type CollectionMarketplaceTx = z.infer<typeof CollectionMarketplaceTxSchema>;
@@ -146,3 +166,5 @@ export type CollectionUpdateUnitPriceTx = z.infer<typeof CollectionUpdateUnitPri
 export type CollectionUpdateConfigTx = z.infer<typeof CollectionUpdateConfigSchema>;
 export type CollectionSetAdminTx = z.infer<typeof CollectionSetAdminSchema>;
 export type CollectionWithdrawTx = z.infer<typeof CollectionWithdrawSchema>;
+export type WhitelistInfoTx = z.infer<typeof WhitelistInfoSchema>;
+export type WhitelistAddMembersTx = z.infer<typeof WhitelistAddMembersSchema>;

@@ -26,8 +26,8 @@ export const collection = pgTable(
     description: varchar("description").notNull(),
     image: varchar("image").notNull(),
     externalLink: varchar("external_link").notNull(),
-    royaltyAddress: varchar("royalty_address", { length: 255 }).notNull(),
-    royaltyFee: numeric("royalty_fee").notNull(),
+    royaltyAddress: varchar("royalty_address", { length: 255 }),
+    royaltyFee: numeric("royalty_fee"),
     maxNumToken: integer("max_num_token"),
     perAddressLimit: integer("per_address_limit"),
     whitelist: uuid("whitelist").references(() => whitelist.id, {
