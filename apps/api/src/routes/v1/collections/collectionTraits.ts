@@ -33,6 +33,7 @@ const route = createRoute({
     }),
   },
   responses: {
+    404: { description: "Collection not found" },
     200: {
       description: "Collection trait statistics",
       content: {
