@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { getNftBids, getNftListings, getNftSales } from "@src/services/nft.service";
+import { getNftBids, getNftActiveListings, getNftSales } from "@src/services/nft.service";
 import { OpenAPI_ExampleCollection } from "@src/utils/constants";
 import { round } from "@src/utils/math";
 import { db, and, eq, nft as nftTable, block as blockTable, day as dayTable } from "database";
@@ -93,7 +93,7 @@ export default new OpenAPIHono().openapi(route, async (c) => {
 
   const { nft, block: mintedOnBlock, day: mintedOnDay } = result;
 
-  const [sales, bids, listings] = await Promise.all([getNftSales(nft.id), getNftBids(nft.id), getNftListings(nft.id)]);
+  const [sales, bids, activeListings] = await Promise.all([getNftSales(nft.id), getNftBids(nft.id), getNftActiveListings(nft.id)]);
 
   let salesEntries = sales.map((sale) => ({
     type: "sale",
@@ -133,14 +133,12 @@ export default new OpenAPIHono().openapi(route, async (c) => {
       denom: bid.bidDenom,
       usdPrice: getUsdPrice(bid.bidPrice, bid.bidDenom, bid.block?.day.tokenPrice)
     })),
-    listings: listings
-      .filter((x) => !x.unlistedBlockHeight) // TODO: Remove?
-      .map((listing) => ({
-        datetime: listing.block?.datetime ?? null,
-        price: listing.forSalePrice,
-        denom: listing.forSaleDenom,
-        usdPrice: getUsdPrice(listing.forSalePrice, listing.forSaleDenom, listing.block?.day.tokenPrice)
-      })),
+    listings: activeListings.map((listing) => ({
+      datetime: listing.block?.datetime ?? null,
+      price: listing.forSalePrice,
+      denom: listing.forSaleDenom,
+      usdPrice: getUsdPrice(listing.forSalePrice, listing.forSaleDenom, listing.block?.day.tokenPrice)
+    })),
     priceHistory: priceHistory
   });
 });
