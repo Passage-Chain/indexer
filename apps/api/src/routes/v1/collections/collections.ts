@@ -43,25 +43,34 @@ const route = createRoute({
                 nftCount: z.number(),
                 uniqueOwnerCount: z.number(),
                 floorPrice: z.string().nullable(),
-                saleCount: z.number(),
-                saleVolume: z.object({
+                totalSaleCount: z.number(),
+                totalSaleVolume: z.object({
                   upasg: z.string().nullable(),
                   usd: z.string().nullable()
                 }),
-                saleCount24hAgo: z.number(),
-                saleVolume24hAgo: z.object({
+                saleCount24h: z.number(),
+                saleCount24hChangePercentage: z.number(),
+                saleVolume24h: z.object({
                   upasg: z.string().nullable(),
-                  usd: z.string().nullable()
+                  upasgChangePercentage: z.number().nullable(),
+                  usd: z.string().nullable(),
+                  usdChangePercentage: z.number().nullable()
                 }),
-                saleCount7dAgo: z.number(),
-                saleVolume7dAgo: z.object({
+                saleCount7d: z.number(),
+                saleCount7dChangePercentage: z.number(),
+                saleVolume7d: z.object({
                   upasg: z.string().nullable(),
-                  usd: z.string().nullable()
+                  upasgChangePercentage: z.number().nullable(),
+                  usd: z.string().nullable(),
+                  usdChangePercentage: z.number().nullable()
                 }),
-                saleCount30dAgo: z.number(),
-                saleVolume30dAgo: z.object({
+                saleCount30d: z.number(),
+                saleCount30dChangePercentage: z.number(),
+                saleVolume30d: z.object({
                   upasg: z.string().nullable(),
-                  usd: z.string().nullable()
+                  upasgChangePercentage: z.number().nullable(),
+                  usd: z.string().nullable(),
+                  usdChangePercentage: z.number().nullable()
                 }),
                 listedTokenCount: z.number()
               })
