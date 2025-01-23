@@ -154,9 +154,7 @@ export class ContractIndexer extends Indexer {
       ),
       createZodHandler(NftMintTxSchema, (nftMint) => this.mintNft(dbTransaction, txEvents, height)),
       createZodHandler(NftSetAskSchema, (nftSetAsk) => this.setNftForSale(dbTransaction, txEvents, height)),
-      createZodHandler(NftRemoveAskSchema, (nftRemoveAsk) =>
-        this.removeNftSale(dbTransaction, txEvents, nftRemoveAsk.remove_ask.token_id, decodedMessage.sender)
-      ),
+      createZodHandler(NftRemoveAskSchema, (nftRemoveAsk) => this.removeNftSale(dbTransaction, txEvents, nftRemoveAsk.remove_ask.token_id, height)),
       createZodHandler(NftSetBidSchema, (nftSetBid) =>
         this.setNftBid(
           dbTransaction,
@@ -593,7 +591,7 @@ export class ContractIndexer extends Indexer {
     }
   }
 
-  private async removeNftSale(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: string, owner: string) {
+  private async removeNftSale(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: string, height: number) {
     const collectionAddress = getEventAttributeValue(txEvents, "wasm-remove-ask", "collection");
 
     if (!collectionAddress) throw new Error(`Collection address not found for remove ask`);
@@ -606,12 +604,20 @@ export class ContractIndexer extends Indexer {
       throw new Error(`Collection not found for ${collectionAddress}`);
     }
 
-    await dbTransaction
-      .update(nft)
-      .set({
-        activeListingId: null
-      })
-      .where(and(eq(nft.tokenId, parseTokenId(tokenId)), eq(nft.collection, dbCollection.address)));
+    const dbNft = await dbTransaction.query.nft.findFirst({
+      where: (nft, { and, eq }) => and(eq(nft.tokenId, parseTokenId(tokenId)), eq(nft.collection, dbCollection.address))
+    });
+
+    if (!dbNft) {
+      throw new Error(`Nft not found for ${tokenId} in ${collectionAddress}`);
+    }
+
+    if (!dbNft.activeListingId) {
+      throw new Error(`Nft ${tokenId} in ${collectionAddress} is not listed`);
+    }
+
+    await dbTransaction.update(nftListing).set({ unlistedBlockHeight: height }).where(eq(nftListing.id, dbNft.activeListingId));
+    await dbTransaction.update(nft).set({ activeListingId: null }).where(eq(nft.id, dbNft.id));
   }
 
   private async setNftBid(
@@ -870,12 +876,15 @@ export class ContractIndexer extends Indexer {
       royaltyFeeAddress: royaltyRecipient
     });
 
-    // Insert unlisting event
-    await dbTransaction.insert(nftListing).values({
-      owner: dbNft.owner,
-      nft: dbNft.id,
-      unlistedBlockHeight: height
-    });
+    // Update listing
+    if (dbNft.activeListingId) {
+      await dbTransaction
+        .update(nftListing)
+        .set({
+          unlistedBlockHeight: height
+        })
+        .where(eq(nftListing.id, dbNft.activeListingId));
+    }
 
     // Update the owner and sale status
     await dbTransaction
@@ -964,7 +973,6 @@ export class ContractIndexer extends Indexer {
     dbTransaction: DbTransaction,
     txEvents: TransactionEventWithAttributes[]
   ) {
-    debugger;
     const whitelistAddress = getEventAttributeValue(txEvents, "instantiate", "_contract_address");
 
     if (!whitelistAddress) throw new Error("Whitelist address not found");
@@ -1007,7 +1015,6 @@ export class ContractIndexer extends Indexer {
   }
 
   private async handleAddWhitelistMembers(dbTransaction: DbTransaction, whitelistAddress: string, whitelistAddMembers: WhitelistAddMembersTx, height: number) {
-    debugger;
     // Get the whitelist from the database
     const dbWhitelist = await dbTransaction.query.whitelist.findFirst({
       where: (whitelist, { eq }) => eq(whitelist.address, whitelistAddress)
