@@ -42,4 +42,4 @@ COPY --from=installer /app .
 RUN apk add --no-cache libcap; \
     setcap cap_net_bind_service=+ep `readlink -f \`which node\``
 
-CMD cd apps/api/ && node dist/index.js
+CMD cd apps/$WORKSPACE/ && node dist/index.js
