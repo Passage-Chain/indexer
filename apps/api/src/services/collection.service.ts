@@ -1,6 +1,7 @@
 import { block, day, db, eq, nft, nftListing, nftSale, and, lte, min, sql, sum, count, countDistinct, gte, nftToTrait, nftTrait, isNull, desc } from "database";
 import { TraitStats, GetTraitsOptions } from "@src/types/collection";
 import { udenomToDenom } from "@src/utils/math";
+import { getLastProcessedISODate } from "./block.service";
 
 export async function getCollectionStats(collectionAddress: string) {
   const [nftCount, uniqueOwnerCount, floorPrice, saleAndVolumeStats, listedTokenCount] = await Promise.all([
@@ -56,9 +57,7 @@ async function getUniqueOwnerCount(collectionAddress: string) {
 }
 
 async function getSaleAndVolumeStats(collectionAddress: string | undefined) {
-  const lastProcessedBlock = await db.query.block.findFirst({ where: eq(block.isProcessed, true), orderBy: desc(block.height) });
-
-  const lastProcessedDate = lastProcessedBlock.datetime.toISOString();
+  const lastProcessedDate = await getLastProcessedISODate();
 
   const [results] = await db
     .select({
