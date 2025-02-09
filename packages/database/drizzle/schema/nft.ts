@@ -14,7 +14,7 @@ import { block } from "./block";
 import { nftBid } from "./nftBid";
 import { nftTransfer } from "./nftTransfer";
 import { nftListing } from "./nftListing";
-import { nftToTrait, nftTrait } from "./nftTrait";
+import { nftToTrait } from "./nftTrait";
 import { nftSale } from "./nftSale";
 
 export const nft = pgTable(
