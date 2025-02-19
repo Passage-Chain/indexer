@@ -37,6 +37,10 @@ const route = createRoute({
               z.object({
                 tokenId: z.string(),
                 owner: z.string(),
+                collection: z.object({
+                  address: z.string(),
+                  name: z.string()
+                }),
                 metadata: z.unknown({ description: "JSON Metadata" }),
                 createdOnBlockHeight: z.number(),
                 mintedOnBlockHeight: z.number(),
@@ -73,19 +77,22 @@ export default new OpenAPIHono().openapi(route, async (c) => {
   if (sort && !nftSortOptions.includes(sort)) {
     return c.text("Invalid sort option, valid options are: " + nftSortOptions.join(","), 400);
   }
-  console.time("getNftsWithStats");
+
   const { nfts, totalCount } = await getNftsWithStats({
     saleType,
     sort,
     skip,
     limit
   });
-  console.timeEnd("getNftsWithStats");
 
   return c.json({
     nfts: nfts.map((nft) => ({
       tokenId: nft.tokenId,
       owner: nft.owner,
+      collection: {
+        address: nft.collectionAddress,
+        name: nft.collectionName
+      },
       metadata: nft.metadata,
       createdOnBlockHeight: nft.createdOnBlockHeight,
       mintedOnBlockHeight: nft.mintedOnBlockHeight,

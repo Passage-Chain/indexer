@@ -1,4 +1,22 @@
-import { and, asc, block, block as blockTable, count, day as dayTable, db, desc, eq, isNotNull, isNull, nft, nftBid, nftListing, nftSale, sql } from "database";
+import {
+  and,
+  asc,
+  block,
+  block as blockTable,
+  collection,
+  count,
+  day as dayTable,
+  db,
+  desc,
+  eq,
+  isNotNull,
+  isNull,
+  nft,
+  nftBid,
+  nftListing,
+  nftSale,
+  sql
+} from "database";
 import { getLastProcessedISODate } from "./block.service";
 
 export async function getNftActiveListings(nftId: string) {
@@ -122,6 +140,8 @@ export async function getNftsWithStats({
       .select({
         tokenId: nft.tokenId,
         owner: nft.owner,
+        collectionAddress: collection.address,
+        collectionName: collection.name,
         metadata: nft.metadata,
         createdOnBlockHeight: nft.createdOnBlockHeight,
         mintedOnBlockHeight: nft.mintedOnBlockHeight,
@@ -148,6 +168,7 @@ export async function getNftsWithStats({
       })
       .from(nftsDataSql)
       .innerJoin(nft, eq(nft.id, nftsDataSql.nftId))
+      .innerJoin(collection, eq(collection.address, nft.collection))
       .leftJoin(nftListing, eq(nftListing.id, nft.activeListingId))
   );
 
