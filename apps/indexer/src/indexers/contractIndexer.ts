@@ -112,7 +112,6 @@ export class ContractIndexer extends Indexer {
     if (matchingHandler) {
       await matchingHandler.handler(matchingHandler.type.safeParse(jsonData).data);
     } else {
-      debugger;
       console.log("Not handled", jsonData);
     }
   }
@@ -221,7 +220,6 @@ export class ContractIndexer extends Indexer {
     if (matchingHandler) {
       await matchingHandler.handler(matchingHandler.type.safeParse(jsonData).data);
     } else if (!jsonData.approve && !jsonData.migration_done) {
-      debugger;
       console.log("Not handled", jsonData);
     }
   }
@@ -321,7 +319,6 @@ export class ContractIndexer extends Indexer {
     });
 
     if (!dbCollection) {
-      debugger;
       throw new Error(`Collection not found for market contract ${marketContractAddress}`);
     }
 
@@ -384,7 +381,6 @@ export class ContractIndexer extends Indexer {
     });
 
     if (!dbCollection) {
-      debugger;
       throw new Error(`Collection not found for mint contract ${collectionContract}`);
     }
 
@@ -445,8 +441,7 @@ export class ContractIndexer extends Indexer {
     const tokenId = getEventAttributeValue(txEvents, "wasm", "token_id");
     const normalizedTokenId = tokenId && parseTokenId(tokenId);
     const owner = getEventAttributeValue(txEvents, "coin_spent", "spender");
-    const mintPriceStr = getEventAttributeValue(txEvents, "transfer", "amount");
-    const mintPrice = mintPriceStr && parseCoins(mintPriceStr)[0];
+    const mintPrice = getEventAttributeValue(txEvents, "wasm", "mint_price");
 
     if (!minterOrCollectionAddress) throw new Error(`Minter or collection address not found (#${height})`);
 
@@ -467,7 +462,6 @@ export class ContractIndexer extends Indexer {
     }
 
     if (!owner) {
-      debugger;
       throw new Error(`Owner not found for token ${normalizedTokenId}`);
     }
 
@@ -475,8 +469,8 @@ export class ContractIndexer extends Indexer {
       .update(nft)
       .set({
         mintedOnBlockHeight: height,
-        mintPrice: mintPrice.amount,
-        mintDenom: mintPrice.denom,
+        mintPrice: mintPrice,
+        mintDenom: "upasg",
         owner: owner
       })
       .where(and(eq(nft.tokenId, normalizedTokenId), eq(nft.collection, dbCollection.address)));
@@ -539,7 +533,6 @@ export class ContractIndexer extends Indexer {
     });
 
     if (!dbCollection) {
-      debugger;
       throw new Error(`Collection not found for ${collectionAddress}`);
     }
 
@@ -567,7 +560,6 @@ export class ContractIndexer extends Indexer {
       this.executeNftSale(dbTransaction, txEvents, normalizedTokenId, height);
     } else {
       if (!dbNft.owner) {
-        debugger;
         throw new Error(`Owner not found for token ${normalizedTokenId} collection ${dbCollection.address}`);
       }
 
@@ -641,7 +633,6 @@ export class ContractIndexer extends Indexer {
       .where(and(/*isNotNull(nft.owner),*/ eq(nft.tokenId, tokenId), eq(collection.marketContract, collectionAddress)));
 
     if (!dbNft) {
-      debugger;
       throw new Error(`Nft not found for ${tokenId} in ${collectionAddress}`);
     }
 
@@ -705,7 +696,6 @@ export class ContractIndexer extends Indexer {
     const [dbCollection] = await dbTransaction.select().from(collection).where(eq(collection.marketContract, collectionMarketAddress));
 
     if (!dbCollection) {
-      debugger;
       throw new Error(`Collection not found ${collectionMarketAddress}`);
     }
 
@@ -729,7 +719,6 @@ export class ContractIndexer extends Indexer {
     const [dbCollection] = await dbTransaction.select().from(collection).where(eq(collection.marketContract, collectionMarketAddress));
 
     if (!dbCollection) {
-      debugger;
       throw new Error(`Collection not found ${collectionMarketAddress}`);
     }
 
