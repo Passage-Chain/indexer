@@ -70,6 +70,13 @@ export const NftAcceptCollectionBidSchema = z.object({
   })
 });
 
+export const NftAcceptBidSchema = z.object({
+  accept_bid: z.object({
+    bidder: z.string(),
+    token_id: z.string()
+  })
+});
+
 export const NftMetadataSchema = z.object({
   image: z.string().nullable().optional(),
   image_data: z.string().nullable().optional(),

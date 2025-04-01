@@ -10,6 +10,7 @@ type TxEventType =
   | "coin_spent"
   | "instantiate"
   | "wasm"
+  | "wasm-accept-bid"
   | "wasm-set-ask"
   | "wasm-remove-ask"
   | "wasm-set-bid"
