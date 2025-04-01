@@ -1,5 +1,12 @@
-import { relations } from "drizzle-orm";
-import { pgTable, varchar, integer, uuid, numeric } from "drizzle-orm/pg-core";
+import { isNull, relations } from "drizzle-orm";
+import {
+  pgTable,
+  varchar,
+  integer,
+  uuid,
+  numeric,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { block } from "./block";
 import { collection } from "./collection";
 
@@ -24,9 +31,13 @@ export const nftCollectionBid = pgTable(
       () => block.height
     ),
   },
-  (table) => {
-    return {};
-  }
+  (table) => [
+    uniqueIndex(
+      "nft_collection_bid_owner_collection_where_removed_block_height_null"
+    )
+      .on(table.owner, table.collection)
+      .where(isNull(table.removedBlockHeight)),
+  ]
 );
 
 export const nftCollectionBidRelations = relations(

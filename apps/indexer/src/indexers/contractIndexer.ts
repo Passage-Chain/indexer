@@ -22,7 +22,8 @@ import {
   nftTrait,
   nftToTrait,
   whitelist,
-  whitelistMember
+  whitelistMember,
+  isNull
 } from "database";
 import { MsgExecuteContract, MsgInstantiateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
@@ -52,6 +53,7 @@ import {
   WhitelistAddMembersTx
 } from "@src/shared/zod/collection";
 import {
+  NftAcceptBidSchema,
   NftAcceptCollectionBidSchema,
   NftCollectionBidSchema,
   NftMetadataSchema,
@@ -202,6 +204,7 @@ export class ContractIndexer extends Indexer {
       createZodHandler(NftAcceptCollectionBidSchema, (nftAcceptCollectionBid) =>
         this.acceptCollectionBid(dbTransaction, txEvents, parseTokenId(nftAcceptCollectionBid.accept_collection_bid.token_id), height)
       ),
+      createZodHandler(NftAcceptBidSchema, (nftAcceptBid) => this.acceptBid(dbTransaction, txEvents, parseTokenId(nftAcceptBid.accept_bid.token_id), height)),
       createZodHandler(NftMintToSchema, (nftMintTo) => this.mintToNft(dbTransaction, txEvents, decodedMessage.contract, nftMintTo.mint_to.recipient, height)),
       /* Untracked transactions for now */
       createZodHandler(CollectionMigrationMinterTxSchema, (collectionMigrationMinter) => console.log("Ignored Type: CollectionMigrationMinterTxSchema")),
@@ -642,6 +645,9 @@ export class ContractIndexer extends Indexer {
       await dbTransaction.insert(nftBid).values({
         owner: owner,
         nft: dbNft.id,
+        bidPrice: amount,
+        bidDenom: denom,
+        bidBlockHeight: height,
         removedBlockHeight: height
       });
     } else {
@@ -665,17 +671,26 @@ export class ContractIndexer extends Indexer {
       .select({ id: nft.id })
       .from(nft)
       .innerJoin(collection, eq(collection.address, nft.collection))
-      .where(and(/*isNotNull(nft.owner),*/ eq(nft.tokenId, tokenId), eq(collection.marketContract, marketAddress)));
+      .where(and(eq(nft.tokenId, tokenId), eq(collection.marketContract, marketAddress)));
 
     if (!dbNft) {
       throw new Error(`Nft not found for ${tokenId} in ${marketAddress}`);
     }
 
-    await dbTransaction.insert(nftBid).values({
-      owner: owner,
-      nft: dbNft.id,
-      removedBlockHeight: height
+    const bid = await dbTransaction.query.nftBid.findFirst({
+      where: and(eq(nftBid.nft, dbNft.id), eq(nftBid.owner, owner), isNull(nftBid.removedBlockHeight))
     });
+
+    if (!bid) {
+      throw new Error(`Bid not found for ${tokenId} in ${marketAddress}`);
+    }
+
+    await dbTransaction
+      .update(nftBid)
+      .set({
+        removedBlockHeight: height
+      })
+      .where(eq(nftBid.id, bid.id));
   }
 
   private async setNftCollectionBid(
@@ -722,27 +737,34 @@ export class ContractIndexer extends Indexer {
       throw new Error(`Collection not found ${collectionMarketAddress}`);
     }
 
-    await dbTransaction.insert(nftCollectionBid).values({
-      owner: owner,
-      collection: dbCollection.address,
-      removedBlockHeight: height
+    const bid = await dbTransaction.query.nftCollectionBid.findFirst({
+      where: and(eq(nftCollectionBid.collection, dbCollection.address), eq(nftCollectionBid.owner, owner), isNull(nftCollectionBid.removedBlockHeight))
     });
+
+    if (!bid) {
+      throw new Error(`Collection bid not found for ${dbCollection.address} in ${collectionMarketAddress}`);
+    }
+
+    await dbTransaction
+      .update(nftCollectionBid)
+      .set({
+        removedBlockHeight: height
+      })
+      .where(eq(nftCollectionBid.id, bid.id));
   }
 
   private async acceptCollectionBid(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
     const collectionMarketAddress = getEventAttributeValue(txEvents, "wasm-accept-collection-bid", "_contract_address");
-    const units = getEventAttributeValue(txEvents, "wasm-accept-collection-bid", "units");
     const bidder = getEventAttributeValue(txEvents, "wasm-accept-collection-bid", "bidder");
-    const price = getEventAttributeValue(txEvents, "wasm-accept-collection-bid", "price");
 
-    if (!collectionMarketAddress) throw "Could not find collection address in remove bid event";
+    if (!collectionMarketAddress) throw "Could not find collection address in accept collection bid event";
 
     const [{ nft_collection_bid: dbNftCollectionBid, collection: dbCollection, nft: dbNft }] = await dbTransaction
       .select()
       .from(nftCollectionBid)
       .innerJoin(collection, eq(collection.address, nftCollectionBid.collection))
       .innerJoin(nft, eq(nft.collection, collection.address))
-      .where(and(eq(nft.tokenId, tokenId), eq(collection.marketContract, collectionMarketAddress)));
+      .where(and(eq(nft.tokenId, tokenId), eq(collection.marketContract, collectionMarketAddress), isNull(nftCollectionBid.removedBlockHeight)));
 
     if (!dbNftCollectionBid) {
       throw new Error(`Nft collection bid not found for ${tokenId} in ${collectionMarketAddress}`);
@@ -762,11 +784,12 @@ export class ContractIndexer extends Indexer {
 
     // Remove ask if there is only one unit, otherwise decrease the units
     if (dbNftCollectionBid.units === 1) {
-      await dbTransaction.insert(nftCollectionBid).values({
-        owner: bidder,
-        collection: dbCollection.address,
-        removedBlockHeight: height
-      });
+      await dbTransaction
+        .update(nftCollectionBid)
+        .set({
+          removedBlockHeight: height
+        })
+        .where(eq(nftCollectionBid.id, dbNftCollectionBid.id));
     } else {
       await dbTransaction
         .update(nftCollectionBid)
@@ -775,6 +798,45 @@ export class ContractIndexer extends Indexer {
         })
         .where(and(eq(nftCollectionBid.id, dbNftCollectionBid.id)));
     }
+
+    this.executeNftSale(dbTransaction, txEvents, tokenId, height);
+  }
+
+  private async acceptBid(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
+    const collectionMarketAddress = getEventAttributeValue(txEvents, "wasm-accept-bid", "_contract_address");
+    const bidder = getEventAttributeValue(txEvents, "wasm-accept-bid", "bidder");
+
+    if (!collectionMarketAddress) throw "Could not find collection address in accept bid event";
+
+    const [{ nft_bid: dbNftBid, collection: dbCollection, nft: dbNft }] = await dbTransaction
+      .select()
+      .from(nftBid)
+      .innerJoin(nft, eq(nft.id, nftBid.nft))
+      .innerJoin(collection, eq(nft.collection, collection.address))
+      .where(and(eq(nft.tokenId, tokenId), eq(collection.marketContract, collectionMarketAddress), isNull(nftBid.removedBlockHeight)));
+
+    if (!dbNftBid) {
+      throw new Error(`Nft bid not found for ${tokenId} in ${collectionMarketAddress}`);
+    }
+
+    if (!dbNft) {
+      throw new Error(`Nft not found for ${tokenId} in ${dbCollection.address}`);
+    }
+
+    if (!dbNft.owner) {
+      throw new Error(`Owner missing for ${tokenId} in ${dbCollection.address}`);
+    }
+
+    if (!bidder) {
+      throw new Error(`Bidder missing for ${tokenId} in ${dbCollection.address}`);
+    }
+
+    await dbTransaction
+      .update(nftBid)
+      .set({
+        removedBlockHeight: height
+      })
+      .where(eq(nftBid.id, dbNftBid.id));
 
     this.executeNftSale(dbTransaction, txEvents, tokenId, height);
   }

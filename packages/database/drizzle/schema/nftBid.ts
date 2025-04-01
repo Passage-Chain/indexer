@@ -1,21 +1,36 @@
-import { relations } from "drizzle-orm";
-import { pgTable, varchar, integer, uuid, numeric } from "drizzle-orm/pg-core";
+import { isNull, relations } from "drizzle-orm";
+import {
+  pgTable,
+  varchar,
+  integer,
+  uuid,
+  numeric,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { nft } from "./nft";
 import { block } from "./block";
 
-export const nftBid = pgTable("nft_bid", {
-  id: uuid("id").defaultRandom().primaryKey().notNull(),
-  owner: varchar("owner", { length: 255 }).notNull(),
-  nft: uuid("nft")
-    .references(() => nft.id)
-    .notNull(),
-  bidPrice: numeric("bid_price"),
-  bidDenom: varchar("bid_denom", { length: 255 }),
-  bidBlockHeight: integer("bid_block_height").references(() => block.height),
-  removedBlockHeight: integer("removed_block_height").references(
-    () => block.height
-  ),
-});
+export const nftBid = pgTable(
+  "nft_bid",
+  {
+    id: uuid("id").defaultRandom().primaryKey().notNull(),
+    owner: varchar("owner", { length: 255 }).notNull(),
+    nft: uuid("nft")
+      .references(() => nft.id)
+      .notNull(),
+    bidPrice: numeric("bid_price"),
+    bidDenom: varchar("bid_denom", { length: 255 }),
+    bidBlockHeight: integer("bid_block_height").references(() => block.height),
+    removedBlockHeight: integer("removed_block_height").references(
+      () => block.height
+    ),
+  },
+  (table) => [
+    uniqueIndex("nft_bid_owner_nft_where_removed_block_height_null")
+      .on(table.owner, table.nft)
+      .where(isNull(table.removedBlockHeight)),
+  ]
+);
 
 export const nftBidRelations = relations(nftBid, ({ one }) => ({
   nft: one(nft, {
