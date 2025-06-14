@@ -149,10 +149,10 @@ export async function getNftsWithStats({
         mintDenom: nft.mintDenom,
         forSalePrice: nftListing.forSalePrice,
         forSaleDenom: nftListing.forSaleDenom,
-        saleCount: nftsDataSql.saleCount,
-        saleCount24h: nftsDataSql.saleCount24h,
-        saleCount7d: nftsDataSql.saleCount7d,
-        saleCount30d: nftsDataSql.saleCount30d,
+        saleCount: sql<string>`COALESCE(${nftsDataSql.saleCount}, 0)`.as("sale_count"),
+        saleCount24h: sql<string>`COALESCE(${nftsDataSql.saleCount24h}, 0)`.as("sale_count_24h"),
+        saleCount7d: sql<string>`COALESCE(${nftsDataSql.saleCount7d}, 0)`.as("sale_count_7d"),
+        saleCount30d: sql<string>`COALESCE(${nftsDataSql.saleCount30d}, 0)`.as("sale_count_30d"),
         saleCount24hPercentageChange:
           sql`CASE WHEN ${nftsDataSql.saleCount24hComparison} = 0 THEN NULL ELSE ${nftsDataSql.saleCount24h} - ${nftsDataSql.saleCount24hComparison} / ${nftsDataSql.saleCount24hComparison} * 100 END`.as(
             "sale_count_24h_percentage_change"
@@ -167,9 +167,10 @@ export async function getNftsWithStats({
           )
       })
       .from(nftsDataSql)
-      .innerJoin(nft, eq(nft.id, nftsDataSql.nftId))
+      .rightJoin(nft, eq(nft.id, nftsDataSql.nftId))
       .innerJoin(collection, eq(collection.address, nft.collection))
       .leftJoin(nftListing, eq(nftListing.id, nft.activeListingId))
+      .where(nftFilterFn)
   );
 
   const sortMapping = {
