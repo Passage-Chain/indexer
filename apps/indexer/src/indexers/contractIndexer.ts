@@ -639,6 +639,19 @@ export class ContractIndexer extends Indexer {
       throw new Error(`Nft not found for ${tokenId} in ${collectionAddress}`);
     }
 
+    const existingBid = await dbTransaction.query.nftBid.findFirst({
+      where: and(eq(nftBid.nft, dbNft.id), eq(nftBid.owner, owner), isNull(nftBid.removedBlockHeight))
+    });
+
+    if (existingBid) {
+      await dbTransaction
+        .update(nftBid)
+        .set({
+          removedBlockHeight: height
+        })
+        .where(eq(nftBid.id, existingBid.id));
+    }
+
     if (txEvents.some((event) => event.type === "wasm-finalize-sale")) {
       this.executeNftSale(dbTransaction, txEvents, tokenId, height);
 
