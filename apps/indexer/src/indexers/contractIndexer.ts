@@ -694,16 +694,14 @@ export class ContractIndexer extends Indexer {
       where: and(eq(nftBid.nft, dbNft.id), eq(nftBid.owner, owner), isNull(nftBid.removedBlockHeight))
     });
 
-    if (!bid) {
-      throw new Error(`Bid not found for ${tokenId} in ${marketAddress}`);
+    if (bid) {
+      await dbTransaction
+        .update(nftBid)
+        .set({
+          removedBlockHeight: height
+        })
+        .where(eq(nftBid.id, bid.id));
     }
-
-    await dbTransaction
-      .update(nftBid)
-      .set({
-        removedBlockHeight: height
-      })
-      .where(eq(nftBid.id, bid.id));
   }
 
   private async setNftCollectionBid(
