@@ -23,7 +23,8 @@ import {
   nftToTrait,
   whitelist,
   whitelistMember,
-  isNull
+  isNull,
+  count
 } from "database";
 import { MsgExecuteContract, MsgInstantiateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
@@ -258,11 +259,19 @@ export class ContractIndexer extends Indexer {
     if (!minterAddress) throw new Error(`Collection address not found for ${collectionMinterTx.cw721_address} (#${height})`);
 
     const startTime = new Date(parseInt(collectionMinterTx.start_time) / 1_000_000);
+
+    const [{total: dbCollectionNftCount}] = await dbTransaction.select({
+      total: count()
+    }).from(nft).where(eq(nft.collection, collectionMinterTx.cw721_address));
+
+    const mintableTokens = collectionMinterTx.max_num_tokens - (dbCollectionNftCount || 0);
+
     await dbTransaction
       .update(collection)
       .set({
         mintContract: minterAddress,
         maxNumToken: collectionMinterTx.max_num_tokens,
+        mintableTokens: mintableTokens,
         perAddressLimit: collectionMinterTx.per_address_limit,
         startTime: startTime,
         unitPrice: collectionMinterTx.unit_price.amount,
@@ -469,11 +478,18 @@ export class ContractIndexer extends Indexer {
     }
 
     await dbTransaction
+      .update(collection)
+      .set({
+        mintedTokens: dbCollection.mintedTokens + 1
+      })
+      .where(eq(collection.address, dbCollection.address));
+
+    await dbTransaction
       .update(nft)
       .set({
         mintedOnBlockHeight: height,
         mintPrice: mintPrice,
-        mintDenom: "upasg",
+        mintDenom: dbCollection.unitDenom || "upasg",
         owner: owner
       })
       .where(and(eq(nft.tokenId, normalizedTokenId), eq(nft.collection, dbCollection.address)));
@@ -510,12 +526,23 @@ export class ContractIndexer extends Indexer {
       throw new Error(`Owner not found for token ${normalizedTokenId}`);
     }
 
+    const newAirDroppedTokens = dbCollection.airDroppedTokens + 1;
+    const newMintedTokens = dbCollection.mintedTokens + 1;
+
+    await dbTransaction
+      .update(collection)
+      .set({
+        airDroppedTokens:  newAirDroppedTokens,
+        mintedTokens: newMintedTokens
+      })
+      .where(eq(collection.address, dbCollection.address));
+
     await dbTransaction
       .update(nft)
       .set({
         mintedOnBlockHeight: height,
         mintPrice: mintPrice,
-        mintDenom: "upasg",
+        mintDenom: dbCollection.unitDenom || "upasg",
         owner: recipient
       })
       .where(and(eq(nft.tokenId, normalizedTokenId), eq(nft.collection, dbCollection.address)));
@@ -624,19 +651,19 @@ export class ContractIndexer extends Indexer {
     amount: string,
     denom: string
   ) {
-    const collectionAddress = getEventAttributeValue(txEvents, "wasm-set-bid", "_contract_address");
+    const marketContractAddress = getEventAttributeValue(txEvents, "wasm-set-bid", "_contract_address");
     const tokenId = parseTokenId(_tokenId);
 
-    if (!collectionAddress) throw "Could not find collection address in set bid event";
+    if (!marketContractAddress) throw "Could not find contract address in set bid event";
 
     const [dbNft] = await dbTransaction
       .select({ id: nft.id })
       .from(nft)
       .innerJoin(collection, eq(collection.address, nft.collection))
-      .where(and(/*isNotNull(nft.owner),*/ eq(nft.tokenId, tokenId), eq(collection.marketContract, collectionAddress)));
+      .where(and(/*isNotNull(nft.owner),*/ eq(nft.tokenId, tokenId), eq(collection.marketContract, marketContractAddress)));
 
     if (!dbNft) {
-      throw new Error(`Nft not found for ${tokenId} in ${collectionAddress}`);
+      throw new Error(`Nft not found for ${tokenId} in ${marketContractAddress}`);
     }
 
     if (txEvents.some((event) => event.type === "wasm-finalize-sale")) {
