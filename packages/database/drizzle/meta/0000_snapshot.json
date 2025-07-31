@@ -1,10 +1,8 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "prevId": "",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "monitoredValue": {
+    "public.monitoredValue": {
       "name": "monitoredValue",
       "schema": "",
       "columns": {
@@ -41,19 +39,35 @@
       },
       "indexes": {
         "monitored_value_tracker_target": {
-          "name": "monitored_value_tracker_target",
           "columns": [
-            "tracker",
-            "target"
+            {
+              "expression": "tracker",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "target",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "monitored_value_tracker_target",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "block": {
+    "public.block": {
       "name": "block",
       "schema": "",
       "columns": {
@@ -109,33 +123,65 @@
       },
       "indexes": {
         "block_datetime": {
-          "name": "block_datetime",
           "columns": [
-            "datetime"
+            {
+              "expression": "datetime",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_datetime",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "block_day_id": {
-          "name": "block_day_id",
           "columns": [
-            "dayId"
+            {
+              "expression": "dayId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_day_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "block_height_is_processed": {
-          "name": "block_height_is_processed",
           "columns": [
-            "height",
-            "isProcessed"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_height_is_processed",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "transaction": {
+    "public.transaction": {
       "name": "transaction",
       "schema": "",
       "columns": {
@@ -222,56 +268,101 @@
       },
       "indexes": {
         "transaction_height": {
-          "name": "transaction_height",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_height",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "transaction_height_is_processed_has_processing_error": {
-          "name": "transaction_height_is_processed_has_processing_error",
           "columns": [
-            "height",
-            "isProcessed",
-            "hasProcessingError"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "hasProcessingError",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_height_is_processed_has_processing_error",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "transaction_hash": {
-          "name": "transaction_hash",
           "columns": [
-            "hash"
+            {
+              "expression": "hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_hash",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "transaction_id_has_procesing_error_false": {
-          "name": "transaction_id_has_procesing_error_false",
           "columns": [
-            "id"
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_id_has_procesing_error_false",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "transaction_height_fkey": {
           "name": "transaction_height_fkey",
           "tableFrom": "transaction",
-          "tableTo": "block",
-          "schemaTo": "public",
           "columnsFrom": [
             "height"
           ],
+          "tableTo": "block",
+          "schemaTo": "public",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "message": {
+    "public.message": {
       "name": "message",
       "schema": "",
       "columns": {
@@ -346,84 +437,145 @@
       },
       "indexes": {
         "message_tx_id": {
-          "name": "message_tx_id",
           "columns": [
-            "txId"
+            {
+              "expression": "txId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_tx_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height": {
-          "name": "message_height",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_tx_id_is_processed": {
-          "name": "message_tx_id_is_processed",
           "columns": [
-            "txId",
-            "isProcessed"
+            {
+              "expression": "txId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_tx_id_is_processed",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height_is_notification_processed": {
-          "name": "message_height_is_notification_processed",
           "columns": [
-            "height",
-            "isNotificationProcessed"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isNotificationProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height_is_notification_processed",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height_is_notification_processed_false": {
-          "name": "message_height_is_notification_processed_false",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height_is_notification_processed_false",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height_is_notification_processed_true": {
-          "name": "message_height_is_notification_processed_true",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height_is_notification_processed_true",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "message_txId_fkey": {
           "name": "message_txId_fkey",
           "tableFrom": "message",
-          "tableTo": "transaction",
-          "schemaTo": "public",
           "columnsFrom": [
             "txId"
           ],
+          "tableTo": "transaction",
+          "schemaTo": "public",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "no action"
         },
         "message_height_fkey": {
           "name": "message_height_fkey",
           "tableFrom": "message",
-          "tableTo": "block",
-          "schemaTo": "public",
           "columnsFrom": [
             "height"
           ],
+          "tableTo": "block",
+          "schemaTo": "public",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "day": {
+    "public.day": {
       "name": "day",
       "schema": "",
       "columns": {
@@ -473,32 +625,59 @@
       },
       "indexes": {
         "day_date": {
-          "name": "day_date",
           "columns": [
-            "date"
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "day_date",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "day_first_block_height": {
-          "name": "day_first_block_height",
           "columns": [
-            "firstBlockHeight"
+            {
+              "expression": "firstBlockHeight",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "day_first_block_height",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "day_last_block_height": {
-          "name": "day_last_block_height",
           "columns": [
-            "lastBlockHeight"
+            {
+              "expression": "lastBlockHeight",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "day_last_block_height",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "validator": {
+    "public.validator": {
       "name": "validator",
       "schema": "",
       "columns": {
@@ -601,39 +780,74 @@
       },
       "indexes": {
         "validator_id": {
-          "name": "validator_id",
           "columns": [
-            "id"
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_id",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "validator_operator_address": {
-          "name": "validator_operator_address",
           "columns": [
-            "operatorAddress"
+            {
+              "expression": "operatorAddress",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_operator_address",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "validator_account_address": {
-          "name": "validator_account_address",
           "columns": [
-            "accountAddress"
+            {
+              "expression": "accountAddress",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_account_address",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "validator_hex_address": {
-          "name": "validator_hex_address",
           "columns": [
-            "hexAddress"
+            {
+              "expression": "hexAddress",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_hex_address",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "addressReference": {
+    "public.addressReference": {
       "name": "addressReference",
       "schema": "",
       "columns": {
@@ -670,52 +884,71 @@
       },
       "indexes": {
         "address_reference_transaction_id": {
-          "name": "address_reference_transaction_id",
           "columns": [
-            "transactionId"
+            {
+              "expression": "transactionId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "address_reference_transaction_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "address_reference_address": {
-          "name": "address_reference_address",
           "columns": [
-            "address"
+            {
+              "expression": "address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "address_reference_address",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "addressReference_transactionId_fkey": {
           "name": "addressReference_transactionId_fkey",
           "tableFrom": "addressReference",
-          "tableTo": "transaction",
-          "schemaTo": "public",
           "columnsFrom": [
             "transactionId"
           ],
+          "tableTo": "transaction",
+          "schemaTo": "public",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "no action"
         },
         "addressReference_messageId_fkey": {
           "name": "addressReference_messageId_fkey",
           "tableFrom": "addressReference",
-          "tableTo": "message",
-          "schemaTo": "public",
           "columnsFrom": [
             "messageId"
           ],
+          "tableTo": "message",
+          "schemaTo": "public",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     }
   },
   "enums": {},
@@ -724,5 +957,11 @@
     "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "sequences": {},
+  "policies": {},
+  "views": {},
+  "roles": {}
 }

@@ -1,10 +1,8 @@
 {
-  "id": "ebd7c199-11d9-4226-9e03-d33ac5cca661",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "addressReference": {
+    "public.addressReference": {
       "name": "addressReference",
       "schema": "",
       "columns": {
@@ -41,52 +39,71 @@
       },
       "indexes": {
         "address_reference_transaction_id": {
-          "name": "address_reference_transaction_id",
           "columns": [
-            "transactionId"
+            {
+              "expression": "transactionId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "address_reference_transaction_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "address_reference_address": {
-          "name": "address_reference_address",
           "columns": [
-            "address"
+            {
+              "expression": "address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "address_reference_address",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "addressReference_transactionId_transaction_id_fk": {
           "name": "addressReference_transactionId_transaction_id_fk",
           "tableFrom": "addressReference",
-          "tableTo": "transaction",
           "columnsFrom": [
             "transactionId"
           ],
+          "tableTo": "transaction",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "no action"
         },
         "addressReference_messageId_message_id_fk": {
           "name": "addressReference_messageId_message_id_fk",
           "tableFrom": "addressReference",
-          "tableTo": "message",
           "columnsFrom": [
             "messageId"
           ],
+          "tableTo": "message",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "block": {
+    "public.block": {
       "name": "block",
       "schema": "",
       "columns": {
@@ -142,33 +159,65 @@
       },
       "indexes": {
         "block_datetime": {
-          "name": "block_datetime",
           "columns": [
-            "datetime"
+            {
+              "expression": "datetime",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_datetime",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "block_day_id": {
-          "name": "block_day_id",
           "columns": [
-            "dayId"
+            {
+              "expression": "dayId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_day_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "block_height_is_processed": {
-          "name": "block_height_is_processed",
           "columns": [
-            "height",
-            "isProcessed"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_height_is_processed",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "blockEvent": {
+    "public.blockEvent": {
       "name": "blockEvent",
       "schema": "",
       "columns": {
@@ -206,32 +255,43 @@
       },
       "indexes": {
         "block_event_height_index": {
-          "name": "block_event_height_index",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_event_height_index",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "blockEvent_height_block_height_fk": {
           "name": "blockEvent_height_block_height_fk",
           "tableFrom": "blockEvent",
-          "tableTo": "block",
           "columnsFrom": [
             "height"
           ],
+          "tableTo": "block",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "blockEventAttribute": {
+    "public.blockEventAttribute": {
       "name": "blockEventAttribute",
       "schema": "",
       "columns": {
@@ -269,32 +329,43 @@
       },
       "indexes": {
         "block_event_attribute_block_event_id_index": {
-          "name": "block_event_attribute_block_event_id_index",
           "columns": [
-            "blockEventId"
+            {
+              "expression": "blockEventId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "block_event_attribute_block_event_id_index",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "blockEventAttribute_blockEventId_blockEvent_id_fk": {
           "name": "blockEventAttribute_blockEventId_blockEvent_id_fk",
           "tableFrom": "blockEventAttribute",
-          "tableTo": "blockEvent",
           "columnsFrom": [
             "blockEventId"
           ],
+          "tableTo": "blockEvent",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "day": {
+    "public.day": {
       "name": "day",
       "schema": "",
       "columns": {
@@ -344,32 +415,59 @@
       },
       "indexes": {
         "day_date": {
-          "name": "day_date",
           "columns": [
-            "date"
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "day_date",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "day_first_block_height": {
-          "name": "day_first_block_height",
           "columns": [
-            "firstBlockHeight"
+            {
+              "expression": "firstBlockHeight",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "day_first_block_height",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "day_last_block_height": {
-          "name": "day_last_block_height",
           "columns": [
-            "lastBlockHeight"
+            {
+              "expression": "lastBlockHeight",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "day_last_block_height",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "message": {
+    "public.message": {
       "name": "message",
       "schema": "",
       "columns": {
@@ -444,82 +542,143 @@
       },
       "indexes": {
         "message_tx_id": {
-          "name": "message_tx_id",
           "columns": [
-            "txId"
+            {
+              "expression": "txId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_tx_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height": {
-          "name": "message_height",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_tx_id_is_processed": {
-          "name": "message_tx_id_is_processed",
           "columns": [
-            "txId",
-            "isProcessed"
+            {
+              "expression": "txId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_tx_id_is_processed",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height_is_notification_processed": {
-          "name": "message_height_is_notification_processed",
           "columns": [
-            "height",
-            "isNotificationProcessed"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isNotificationProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height_is_notification_processed",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height_is_notification_processed_false": {
-          "name": "message_height_is_notification_processed_false",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height_is_notification_processed_false",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "message_height_is_notification_processed_true": {
-          "name": "message_height_is_notification_processed_true",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "message_height_is_notification_processed_true",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "message_txId_transaction_id_fk": {
           "name": "message_txId_transaction_id_fk",
           "tableFrom": "message",
-          "tableTo": "transaction",
           "columnsFrom": [
             "txId"
           ],
+          "tableTo": "transaction",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "no action"
         },
         "message_height_block_height_fk": {
           "name": "message_height_block_height_fk",
           "tableFrom": "message",
-          "tableTo": "block",
           "columnsFrom": [
             "height"
           ],
+          "tableTo": "block",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "monitoredValue": {
+    "public.monitoredValue": {
       "name": "monitoredValue",
       "schema": "",
       "columns": {
@@ -556,19 +715,35 @@
       },
       "indexes": {
         "monitored_value_tracker_target": {
-          "name": "monitored_value_tracker_target",
           "columns": [
-            "tracker",
-            "target"
+            {
+              "expression": "tracker",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "target",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "monitored_value_tracker_target",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "transaction": {
+    "public.transaction": {
       "name": "transaction",
       "schema": "",
       "columns": {
@@ -655,55 +830,100 @@
       },
       "indexes": {
         "transaction_height": {
-          "name": "transaction_height",
           "columns": [
-            "height"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_height",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "transaction_height_is_processed_has_processing_error": {
-          "name": "transaction_height_is_processed_has_processing_error",
           "columns": [
-            "height",
-            "isProcessed",
-            "hasProcessingError"
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "isProcessed",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "hasProcessingError",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_height_is_processed_has_processing_error",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "transaction_hash": {
-          "name": "transaction_hash",
           "columns": [
-            "hash"
+            {
+              "expression": "hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_hash",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "transaction_id_has_procesing_error_false": {
-          "name": "transaction_id_has_procesing_error_false",
           "columns": [
-            "id"
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "transaction_id_has_procesing_error_false",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "transaction_height_block_height_fk": {
           "name": "transaction_height_block_height_fk",
           "tableFrom": "transaction",
-          "tableTo": "block",
           "columnsFrom": [
             "height"
           ],
+          "tableTo": "block",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "validator": {
+    "public.validator": {
       "name": "validator",
       "schema": "",
       "columns": {
@@ -807,39 +1027,74 @@
       },
       "indexes": {
         "validator_id": {
-          "name": "validator_id",
           "columns": [
-            "id"
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_id",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "validator_operator_address": {
-          "name": "validator_operator_address",
           "columns": [
-            "operatorAddress"
+            {
+              "expression": "operatorAddress",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_operator_address",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "validator_account_address": {
-          "name": "validator_account_address",
           "columns": [
-            "accountAddress"
+            {
+              "expression": "accountAddress",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_account_address",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "validator_hex_address": {
-          "name": "validator_hex_address",
           "columns": [
-            "hexAddress"
+            {
+              "expression": "hexAddress",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "with": {},
+          "name": "validator_hex_address",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "collection": {
+    "public.collection": {
       "name": "collection",
       "schema": "",
       "columns": {
@@ -966,32 +1221,43 @@
       },
       "indexes": {
         "collection_min_contract": {
-          "name": "collection_min_contract",
           "columns": [
-            "mint_contract"
+            {
+              "expression": "mint_contract",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "collection_min_contract",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "collection_whitelist_whitelist_id_fk": {
           "name": "collection_whitelist_whitelist_id_fk",
           "tableFrom": "collection",
-          "tableTo": "whitelist",
           "columnsFrom": [
             "whitelist"
           ],
+          "tableTo": "whitelist",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "nft": {
+    "public.nft": {
       "name": "nft",
       "schema": "",
       "columns": {
@@ -1065,65 +1331,84 @@
       },
       "indexes": {
         "nft_token_id": {
-          "name": "nft_token_id",
           "columns": [
-            "token_id"
+            {
+              "expression": "token_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "nft_token_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "nft_minted_on_block_height": {
-          "name": "nft_minted_on_block_height",
           "columns": [
-            "minted_on_block_height"
+            {
+              "expression": "minted_on_block_height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "nft_minted_on_block_height",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "nft_minted_on_block_height_block_height_fk": {
           "name": "nft_minted_on_block_height_block_height_fk",
           "tableFrom": "nft",
-          "tableTo": "block",
           "columnsFrom": [
             "minted_on_block_height"
           ],
+          "tableTo": "block",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "nft_collection_collection_address_fk": {
           "name": "nft_collection_collection_address_fk",
           "tableFrom": "nft",
-          "tableTo": "collection",
           "columnsFrom": [
             "collection"
           ],
+          "tableTo": "collection",
           "columnsTo": [
             "address"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "nft_for_sale_block_height_block_height_fk": {
           "name": "nft_for_sale_block_height_block_height_fk",
           "tableFrom": "nft",
-          "tableTo": "block",
           "columnsFrom": [
             "for_sale_block_height"
           ],
+          "tableTo": "block",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "nft_sale": {
+    "public.nft_sale": {
       "name": "nft_sale",
       "schema": "",
       "columns": {
@@ -1194,34 +1479,37 @@
         "nft_sale_nft_nft_id_fk": {
           "name": "nft_sale_nft_nft_id_fk",
           "tableFrom": "nft_sale",
-          "tableTo": "nft",
           "columnsFrom": [
             "nft"
           ],
+          "tableTo": "nft",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "nft_sale_sale_block_height_block_height_fk": {
           "name": "nft_sale_sale_block_height_block_height_fk",
           "tableFrom": "nft_sale",
-          "tableTo": "block",
           "columnsFrom": [
             "sale_block_height"
           ],
+          "tableTo": "block",
           "columnsTo": [
             "height"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "whitelist": {
+    "public.whitelist": {
       "name": "whitelist",
       "schema": "",
       "columns": {
@@ -1286,21 +1574,24 @@
         "whitelist_collection_collection_address_fk": {
           "name": "whitelist_collection_collection_address_fk",
           "tableFrom": "whitelist",
-          "tableTo": "collection",
           "columnsFrom": [
             "collection"
           ],
+          "tableTo": "collection",
           "columnsTo": [
             "address"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
-    "whitelist_member": {
+    "public.whitelist_member": {
       "name": "whitelist_member",
       "schema": "",
       "columns": {
@@ -1326,45 +1617,63 @@
       },
       "indexes": {
         "whitelist_member_address": {
-          "name": "whitelist_member_address",
           "columns": [
-            "address"
+            {
+              "expression": "address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "whitelist_member_address",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "whitelist_member_whitelist_whitelist_id_fk": {
           "name": "whitelist_member_whitelist_whitelist_id_fk",
           "tableFrom": "whitelist_member",
-          "tableTo": "whitelist",
           "columnsFrom": [
             "whitelist"
           ],
+          "tableTo": "whitelist",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     }
   },
   "enums": {
-    "block_event_source": {
+    "public.block_event_source": {
       "name": "block_event_source",
-      "values": {
-        "begin_block_events": "begin_block_events",
-        "end_block_events": "end_block_events"
-      }
+      "schema": "public",
+      "values": [
+        "begin_block_events",
+        "end_block_events"
+      ]
     }
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "ebd7c199-11d9-4226-9e03-d33ac5cca661",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "sequences": {},
+  "policies": {},
+  "views": {},
+  "roles": {}
 }
