@@ -4,23 +4,9 @@
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1712901854723,
-      "tag": "0000_familiar_vindicator",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1715875001641,
-      "tag": "0001_dark_tinkerer",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
       "version": "7",
-      "when": 1753988720687,
-      "tag": "0002_hard_frog_thor",
+      "when": 1753990188428,
+      "tag": "0000_glossy_rhino",
       "breakpoints": true
     }
   ]

@@ -30,9 +30,9 @@ export const collection = pgTable(
     royaltyFee: numeric("royalty_fee"),
     maxNumToken: integer("max_num_token"),
     perAddressLimit: integer("per_address_limit"),
-    airDroppedTokens: integer("airdropped_tokens").default(0),
-    mintableTokens: integer("mintable_tokens").default(0),
-    mintedTokens: integer("minted_tokens").default(0),
+    airDroppedTokens: integer("airdropped_tokens").default(0).notNull(),
+    mintableTokens: integer("mintable_tokens").default(0).notNull(),
+    mintedTokens: integer("minted_tokens").default(0).notNull(),
     whitelist: uuid("whitelist").references(() => whitelist.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
