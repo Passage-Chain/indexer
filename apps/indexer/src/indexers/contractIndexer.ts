@@ -555,6 +555,7 @@ export class ContractIndexer extends Indexer {
       where: (nft, { and, eq, isNotNull }) => and(eq(nft.tokenId, normalizedTokenId), eq(nft.collection, dbCollection.address), isNotNull(nft.owner))
     });
 
+    console.log("---------------- SET_ASK ----------------");
     if (!dbNft) {
       throw new Error(`Nft not found for token ${normalizedTokenId} collection ${dbCollection.address}`);
     }
@@ -723,6 +724,19 @@ export class ContractIndexer extends Indexer {
 
     if (!dbCollection) {
       throw new Error(`Collection not found ${collectionMarketAddress}`);
+    }
+
+    const existingCollectionBid = await dbTransaction.query.nftCollectionBid.findFirst({
+      where: and(eq(nftCollectionBid.collection, dbCollection.address), eq(nftCollectionBid.owner, owner), isNull(nftCollectionBid.removedBlockHeight))
+    });
+
+    if (existingCollectionBid) {
+      await dbTransaction
+        .update(nftCollectionBid)
+        .set({
+          removedBlockHeight: height
+        })
+        .where(eq(nftCollectionBid.id, existingCollectionBid.id));
     }
 
     await dbTransaction.insert(nftCollectionBid).values({
