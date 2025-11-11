@@ -17,6 +17,7 @@ export const transactionEvent = pgTable(
     txId: uuid("tx_id")
       .notNull()
       .references(() => transaction.id, { onUpdate: "cascade" }),
+    msgIndex: integer("message_index").notNull(),
     index: integer("index").notNull(),
     type: varchar("type", { length: 255 }).notNull(),
   },

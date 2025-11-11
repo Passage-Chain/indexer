@@ -47,6 +47,7 @@ import {
   transactionEventAttribute
 } from "database";
 import { BlockType, EventType } from "@src/shared/types";
+import { parseRawLog } from "@cosmjs/stargate/build/logs";
 
 export const setMissingBlock = (height: number) => (missingBlock = height);
 let missingBlock: number | null;
@@ -228,7 +229,7 @@ async function insertBlocks(startHeight: number, endHeight: number) {
 
     for (let txIndex = 0; txIndex < txs.length; ++txIndex) {
       const tx = txs[txIndex];
-      const hash = sha256(Buffer.from(tx, "base64")).toUpperCase();
+      const hash = sha256(new Uint8Array(Buffer.from(tx, "base64"))).toUpperCase();
       const txId = uuid.v4();
 
       const decodedTx = decodeTxRaw(fromBase64(tx));
@@ -265,25 +266,31 @@ async function insertBlocks(startHeight: number, endHeight: number) {
         gasWanted: parseInt(txJson.gas_wanted)
       });
 
-      if (msgs.some((x) => x.typeUrl.startsWith("/cosmwasm"))) {
-        for (const [index, event] of blockResults.txs_results[txIndex].events.entries()) {
-          const eventId = uuid.v4();
-          txsEventsToAdd.push({
-            id: eventId,
-            height: i,
-            txId: txId,
-            index: index,
-            type: event.type
-          });
+      // Only indexing events for successful cosmwasm txs
+      if (msgs.some((x) => x.typeUrl.startsWith("/cosmwasm")) && !txJson.code) {
+        const parsedEvents = parseRawLog(txJson.log);
 
-          txsEventAttributesToAdd.push(
-            ...event.attributes.map((attr, i) => ({
-              transactionEventId: eventId,
-              index: i,
-              key: atob(attr.key),
-              value: attr.value ? atob(attr.value) : attr.value
-            }))
-          );
+        for (const eventGroup of parsedEvents) {
+          for (const [index, event] of eventGroup.events.entries()) {
+            const eventId = uuid.v4();
+            txsEventsToAdd.push({
+              id: eventId,
+              height: i,
+              txId: txId,
+              msgIndex: eventGroup.msg_index,
+              index: index,
+              type: event.type
+            });
+
+            txsEventAttributesToAdd.push(
+              ...event.attributes.map((attr, i) => ({
+                transactionEventId: eventId,
+                index: i,
+                key: attr.key,
+                value: attr.value
+              }))
+            );
+          }
         }
       }
     }

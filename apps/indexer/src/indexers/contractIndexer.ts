@@ -90,22 +90,22 @@ export class ContractIndexer extends Indexer {
     height: number,
     dbTransaction: DbTransaction,
     msg: Message,
-    txEvents: TransactionEventWithAttributes[]
+    msgEvents: TransactionEventWithAttributes[]
   ) {
     const buffer = Buffer.from(decodedMessage.msg);
     const stringBuffer = buffer.toString().replace(/\\n/g, "");
     const jsonData = JSON.parse(stringBuffer);
 
     const handlers: ZodHandler<any>[] = [
-      createZodHandler(CollectionTxSchema, (collectionTx) => this.handleCreateCollection(height, collectionTx, dbTransaction, txEvents)),
+      createZodHandler(CollectionTxSchema, (collectionTx) => this.handleCreateCollection(height, collectionTx, dbTransaction, msgEvents)),
       createZodHandler(CollectionMinterTxSchema, (collectionMinterTx) =>
-        this.handleAssignMinterToCollection(height, collectionMinterTx, dbTransaction, txEvents)
+        this.handleAssignMinterToCollection(height, collectionMinterTx, dbTransaction, msgEvents)
       ),
       createZodHandler(CollectionMarketplaceTxSchema, (collectionMarketplaceTx) =>
-        this.insertMarketplaceData(height, dbTransaction, collectionMarketplaceTx, txEvents)
+        this.insertMarketplaceData(height, dbTransaction, collectionMarketplaceTx, msgEvents)
       ),
       createZodHandler(WhitelistInfoSchema, (whitelistInfo) =>
-        this.handleCreateWhitelist(height, decodedMessage.admin, decodedMessage.label, whitelistInfo, dbTransaction, txEvents)
+        this.handleCreateWhitelist(height, decodedMessage.admin, decodedMessage.label, whitelistInfo, dbTransaction, msgEvents)
       )
     ];
 
@@ -123,7 +123,7 @@ export class ContractIndexer extends Indexer {
     height: number,
     dbTransaction: DbTransaction,
     msg: Message,
-    txEvents: TransactionEventWithAttributes[]
+    msgEvents: TransactionEventWithAttributes[]
   ) {
     const buffer = Buffer.from(decodedMessage.msg);
     const stringBuffer = buffer.toString().replace(/\\n/g, "");
@@ -153,13 +153,13 @@ export class ContractIndexer extends Indexer {
       createZodHandler(CollectionUpdateConfigSchema, (collectionUpdateConfig) =>
         this.updateCollectionMarketplaceConfig(dbTransaction, decodedMessage.contract, collectionUpdateConfig)
       ),
-      createZodHandler(NftMintTxSchema, (nftMint) => this.mintNft(dbTransaction, txEvents, height)),
-      createZodHandler(NftSetAskSchema, (nftSetAsk) => this.setNftForSale(dbTransaction, txEvents, height)),
-      createZodHandler(NftRemoveAskSchema, (nftRemoveAsk) => this.removeNftSale(dbTransaction, txEvents, nftRemoveAsk.remove_ask.token_id, height)),
+      createZodHandler(NftMintTxSchema, (nftMint) => this.mintNft(dbTransaction, msgEvents, height)),
+      createZodHandler(NftSetAskSchema, (nftSetAsk) => this.setNftForSale(dbTransaction, msgEvents, height)),
+      createZodHandler(NftRemoveAskSchema, (nftRemoveAsk) => this.removeNftSale(dbTransaction, msgEvents, nftRemoveAsk.remove_ask.token_id, height)),
       createZodHandler(NftSetBidSchema, (nftSetBid) =>
         this.setNftBid(
           dbTransaction,
-          txEvents,
+          msgEvents,
           height,
           nftSetBid.set_bid.token_id,
           decodedMessage.sender,
@@ -174,7 +174,7 @@ export class ContractIndexer extends Indexer {
 
         return this.setNftCollectionBid(
           dbTransaction,
-          txEvents,
+          msgEvents,
           height,
           decodedMessage.sender,
           nftSetCollectionBid.set_collection_bid.price.amount,
@@ -185,12 +185,12 @@ export class ContractIndexer extends Indexer {
         );
       }),
       createZodHandler(NftRemoveBidSchema, (nftRemoveBid) =>
-        this.removeNftBid(dbTransaction, txEvents, nftRemoveBid.remove_bid.token_id, decodedMessage.sender, height)
+        this.removeNftBid(dbTransaction, msgEvents, nftRemoveBid.remove_bid.token_id, decodedMessage.sender, height)
       ),
       createZodHandler(NftTransferSchema, (nftTransfer) =>
         this.transferNft(
           dbTransaction,
-          txEvents,
+          msgEvents,
           nftTransfer.transfer_nft.token_id,
           height,
           decodedMessage.contract,
@@ -199,13 +199,13 @@ export class ContractIndexer extends Indexer {
         )
       ),
       createZodHandler(NftRemoveCollectionBidSchema, (nftRemoveCollectionBid) =>
-        this.removeNftCollectionBid(dbTransaction, txEvents, decodedMessage.sender, height)
+        this.removeNftCollectionBid(dbTransaction, msgEvents, decodedMessage.sender, height)
       ),
       createZodHandler(NftAcceptCollectionBidSchema, (nftAcceptCollectionBid) =>
-        this.acceptCollectionBid(dbTransaction, txEvents, parseTokenId(nftAcceptCollectionBid.accept_collection_bid.token_id), height)
+        this.acceptCollectionBid(dbTransaction, msgEvents, parseTokenId(nftAcceptCollectionBid.accept_collection_bid.token_id), height)
       ),
-      createZodHandler(NftAcceptBidSchema, (nftAcceptBid) => this.acceptBid(dbTransaction, txEvents, parseTokenId(nftAcceptBid.accept_bid.token_id), height)),
-      createZodHandler(NftMintToSchema, (nftMintTo) => this.mintToNft(dbTransaction, txEvents, decodedMessage.contract, nftMintTo.mint_to.recipient, height)),
+      createZodHandler(NftAcceptBidSchema, (nftAcceptBid) => this.acceptBid(dbTransaction, msgEvents, parseTokenId(nftAcceptBid.accept_bid.token_id), height)),
+      createZodHandler(NftMintToSchema, (nftMintTo) => this.mintToNft(dbTransaction, msgEvents, decodedMessage.contract, nftMintTo.mint_to.recipient, height)),
       /* Untracked transactions for now */
       createZodHandler(CollectionMigrationMinterTxSchema, (collectionMigrationMinter) => console.log("Ignored Type: CollectionMigrationMinterTxSchema")),
       createZodHandler(CollectionMigrationMintableTokensTxSchema, (collectionMigrationMintableTokens) =>
@@ -227,8 +227,8 @@ export class ContractIndexer extends Indexer {
     }
   }
 
-  private async handleCreateCollection(height: number, collectionTx: CollectionTx, dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[]) {
-    const collectionAddress = getEventAttributeValue(txEvents, "instantiate", "_contract_address");
+  private async handleCreateCollection(height: number, collectionTx: CollectionTx, dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[]) {
+    const collectionAddress = getEventAttributeValue(msgEvents, "instantiate", "_contract_address");
 
     if (!collectionAddress) throw new Error(`Collection address not found for ${collectionTx.name}`);
 
@@ -251,9 +251,9 @@ export class ContractIndexer extends Indexer {
     height: number,
     collectionMinterTx: CollectionMinterTx,
     dbTransaction: DbTransaction,
-    txEvents: TransactionEventWithAttributes[]
+    msgEvents: TransactionEventWithAttributes[]
   ) {
-    const minterAddress = getEventAttributeValue(txEvents, "instantiate", "_contract_address");
+    const minterAddress = getEventAttributeValue(msgEvents, "instantiate", "_contract_address");
 
     if (!minterAddress) throw new Error(`Collection address not found for ${collectionMinterTx.cw721_address} (#${height})`);
 
@@ -275,9 +275,9 @@ export class ContractIndexer extends Indexer {
     height: number,
     dbTransaction: DbTransaction,
     collectionMarketplaceTx: CollectionMarketplaceTx,
-    txEvents: TransactionEventWithAttributes[]
+    msgEvents: TransactionEventWithAttributes[]
   ) {
-    const marketContractAddress = getEventAttributeValue(txEvents, "instantiate", "_contract_address");
+    const marketContractAddress = getEventAttributeValue(msgEvents, "instantiate", "_contract_address");
 
     if (!marketContractAddress) throw new Error(`Marketplace contract address not found for ${collectionMarketplaceTx.cw721_address} (height: #${height})`);
 
@@ -439,12 +439,12 @@ export class ContractIndexer extends Indexer {
     }
   }
 
-  private async mintNft(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], height: number) {
-    const minterOrCollectionAddress = getEventAttributeValue(txEvents, "wasm", "_contract_address");
-    const tokenId = getEventAttributeValue(txEvents, "wasm", "token_id");
+  private async mintNft(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], height: number) {
+    const minterOrCollectionAddress = getEventAttributeValue(msgEvents, "wasm", "_contract_address");
+    const tokenId = getEventAttributeValue(msgEvents, "wasm", "token_id");
     const normalizedTokenId = tokenId && parseTokenId(tokenId);
-    const owner = getEventAttributeValue(txEvents, "coin_spent", "spender");
-    const mintPrice = getEventAttributeValue(txEvents, "wasm", "mint_price");
+    const owner = getEventAttributeValue(msgEvents, "coin_spent", "spender");
+    const mintPrice = getEventAttributeValue(msgEvents, "wasm", "mint_price");
 
     if (!minterOrCollectionAddress) throw new Error(`Minter or collection address not found (#${height})`);
 
@@ -481,13 +481,13 @@ export class ContractIndexer extends Indexer {
 
   private async mintToNft(
     dbTransaction: DbTransaction,
-    txEvents: TransactionEventWithAttributes[],
+    msgEvents: TransactionEventWithAttributes[],
     contractAddress: string,
     recipient: string,
     height: number
   ) {
-    const tokenId = getEventAttributeValue(txEvents, "wasm", "token_id");
-    const mintPrice = getEventAttributeValue(txEvents, "wasm", "mint_price");
+    const tokenId = getEventAttributeValue(msgEvents, "wasm", "token_id");
+    const mintPrice = getEventAttributeValue(msgEvents, "wasm", "mint_price");
     const normalizedTokenId = tokenId && parseTokenId(tokenId);
 
     const dbCollection = await dbTransaction.query.collection.findFirst({
@@ -521,12 +521,12 @@ export class ContractIndexer extends Indexer {
       .where(and(eq(nft.tokenId, normalizedTokenId), eq(nft.collection, dbCollection.address)));
   }
 
-  private async setNftForSale(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], height: number) {
-    const collectionAddress = getEventAttributeValue(txEvents, "wasm-set-ask", "collection");
-    const tokenId = getEventAttributeValue(txEvents, "wasm-set-ask", "token_id");
+  private async setNftForSale(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], height: number) {
+    const collectionAddress = getEventAttributeValue(msgEvents, "wasm-set-ask", "collection");
+    const tokenId = getEventAttributeValue(msgEvents, "wasm-set-ask", "token_id");
     const normalizedTokenId = tokenId && parseTokenId(tokenId);
-    const seller = getEventAttributeValue(txEvents, "wasm-set-ask", "seller");
-    const sellPriceStr = getEventAttributeValue(txEvents, "wasm-set-ask", "price");
+    const seller = getEventAttributeValue(msgEvents, "wasm-set-ask", "seller");
+    const sellPriceStr = getEventAttributeValue(msgEvents, "wasm-set-ask", "price");
     const sellPrice = sellPriceStr && parseCoins(sellPriceStr)[0];
 
     if (!collectionAddress) throw new Error(`Collection address not found for nft sale (#${height})`);
@@ -555,13 +555,12 @@ export class ContractIndexer extends Indexer {
       where: (nft, { and, eq, isNotNull }) => and(eq(nft.tokenId, normalizedTokenId), eq(nft.collection, dbCollection.address), isNotNull(nft.owner))
     });
 
-    console.log("---------------- SET_ASK ----------------");
     if (!dbNft) {
       throw new Error(`Nft not found for token ${normalizedTokenId} collection ${dbCollection.address}`);
     }
 
-    if (txEvents.some((event) => event.type === "wasm-finalize-sale")) {
-      this.executeNftSale(dbTransaction, txEvents, normalizedTokenId, height);
+    if (msgEvents.some((event) => event.type === "wasm-finalize-sale")) {
+      this.executeNftSale(dbTransaction, msgEvents, normalizedTokenId, height);
     } else {
       if (!dbNft.owner) {
         throw new Error(`Owner not found for token ${normalizedTokenId} collection ${dbCollection.address}`);
@@ -587,8 +586,8 @@ export class ContractIndexer extends Indexer {
     }
   }
 
-  private async removeNftSale(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: string, height: number) {
-    const collectionAddress = getEventAttributeValue(txEvents, "wasm-remove-ask", "collection");
+  private async removeNftSale(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], tokenId: string, height: number) {
+    const collectionAddress = getEventAttributeValue(msgEvents, "wasm-remove-ask", "collection");
 
     if (!collectionAddress) throw new Error(`Collection address not found for remove ask`);
 
@@ -618,14 +617,14 @@ export class ContractIndexer extends Indexer {
 
   private async setNftBid(
     dbTransaction: DbTransaction,
-    txEvents: TransactionEventWithAttributes[],
+    msgEvents: TransactionEventWithAttributes[],
     height: number,
     _tokenId: string,
     owner: string,
     amount: string,
     denom: string
   ) {
-    const collectionAddress = getEventAttributeValue(txEvents, "wasm-set-bid", "_contract_address");
+    const collectionAddress = getEventAttributeValue(msgEvents, "wasm-set-bid", "_contract_address");
     const tokenId = parseTokenId(_tokenId);
 
     if (!collectionAddress) throw "Could not find collection address in set bid event";
@@ -653,8 +652,8 @@ export class ContractIndexer extends Indexer {
         .where(eq(nftBid.id, existingBid.id));
     }
 
-    if (txEvents.some((event) => event.type === "wasm-finalize-sale")) {
-      this.executeNftSale(dbTransaction, txEvents, tokenId, height);
+    if (msgEvents.some((event) => event.type === "wasm-finalize-sale")) {
+      this.executeNftSale(dbTransaction, msgEvents, tokenId, height);
 
       await dbTransaction.insert(nftBid).values({
         owner: owner,
@@ -675,8 +674,8 @@ export class ContractIndexer extends Indexer {
     }
   }
 
-  private async removeNftBid(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], _tokenId: string, owner: string, height: number) {
-    const marketAddress = getEventAttributeValue(txEvents, "wasm-remove-bid", "_contract_address");
+  private async removeNftBid(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], _tokenId: string, owner: string, height: number) {
+    const marketAddress = getEventAttributeValue(msgEvents, "wasm-remove-bid", "_contract_address");
     const tokenId = parseTokenId(_tokenId);
 
     if (!marketAddress) throw "Could not find collection address in remove bid event";
@@ -707,7 +706,7 @@ export class ContractIndexer extends Indexer {
 
   private async setNftCollectionBid(
     dbTransaction: DbTransaction,
-    txEvents: TransactionEventWithAttributes[],
+    msgEvents: TransactionEventWithAttributes[],
     height: number,
     owner: string,
     amount: string,
@@ -716,7 +715,7 @@ export class ContractIndexer extends Indexer {
     fundsAmount: string,
     fundsDenom: string
   ) {
-    const collectionMarketAddress = getEventAttributeValue(txEvents, "wasm-set-collection-bid", "_contract_address");
+    const collectionMarketAddress = getEventAttributeValue(msgEvents, "wasm-set-collection-bid", "_contract_address");
 
     if (!collectionMarketAddress) throw "Could not find collection address in set bid event";
 
@@ -751,8 +750,8 @@ export class ContractIndexer extends Indexer {
     });
   }
 
-  private async removeNftCollectionBid(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], owner: string, height: number) {
-    const collectionMarketAddress = getEventAttributeValue(txEvents, "wasm-remove-collection-bid", "_contract_address");
+  private async removeNftCollectionBid(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], owner: string, height: number) {
+    const collectionMarketAddress = getEventAttributeValue(msgEvents, "wasm-remove-collection-bid", "_contract_address");
 
     if (!collectionMarketAddress) throw "Could not find collection address in remove bid event";
 
@@ -778,9 +777,9 @@ export class ContractIndexer extends Indexer {
       .where(eq(nftCollectionBid.id, bid.id));
   }
 
-  private async acceptCollectionBid(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
-    const collectionMarketAddress = getEventAttributeValue(txEvents, "wasm-accept-collection-bid", "_contract_address");
-    const bidder = getEventAttributeValue(txEvents, "wasm-accept-collection-bid", "bidder");
+  private async acceptCollectionBid(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
+    const collectionMarketAddress = getEventAttributeValue(msgEvents, "wasm-accept-collection-bid", "_contract_address");
+    const bidder = getEventAttributeValue(msgEvents, "wasm-accept-collection-bid", "bidder");
 
     if (!collectionMarketAddress) throw "Could not find collection address in accept collection bid event";
 
@@ -824,12 +823,12 @@ export class ContractIndexer extends Indexer {
         .where(and(eq(nftCollectionBid.id, dbNftCollectionBid.id)));
     }
 
-    this.executeNftSale(dbTransaction, txEvents, tokenId, height);
+    this.executeNftSale(dbTransaction, msgEvents, tokenId, height);
   }
 
-  private async acceptBid(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
-    const collectionMarketAddress = getEventAttributeValue(txEvents, "wasm-accept-bid", "_contract_address");
-    const bidder = getEventAttributeValue(txEvents, "wasm-accept-bid", "bidder");
+  private async acceptBid(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
+    const collectionMarketAddress = getEventAttributeValue(msgEvents, "wasm-accept-bid", "_contract_address");
+    const bidder = getEventAttributeValue(msgEvents, "wasm-accept-bid", "bidder");
 
     if (!collectionMarketAddress) throw "Could not find collection address in accept bid event";
 
@@ -863,12 +862,12 @@ export class ContractIndexer extends Indexer {
       })
       .where(eq(nftBid.id, dbNftBid.id));
 
-    this.executeNftSale(dbTransaction, txEvents, tokenId, height);
+    this.executeNftSale(dbTransaction, msgEvents, tokenId, height);
   }
 
   private async transferNft(
     dbTransaction: DbTransaction,
-    txEvents: TransactionEventWithAttributes[],
+    msgEvents: TransactionEventWithAttributes[],
     _tokenId: string,
     height: number,
     contractAddress: string,
@@ -905,15 +904,15 @@ export class ContractIndexer extends Indexer {
       .where(and(eq(nft.id, dbNft.id)));
   }
 
-  private async executeNftSale(dbTransaction: DbTransaction, txEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
-    const collectionAddress = getEventAttributeValue(txEvents, "wasm-finalize-sale", "collection");
-    const buyer = getEventAttributeValue(txEvents, "wasm-finalize-sale", "buyer");
-    const payoutMarketPriceStr = getEventAttributeValue(txEvents, "wasm-payout-market", "coin");
+  private async executeNftSale(dbTransaction: DbTransaction, msgEvents: TransactionEventWithAttributes[], tokenId: number, height: number) {
+    const collectionAddress = getEventAttributeValue(msgEvents, "wasm-finalize-sale", "collection");
+    const buyer = getEventAttributeValue(msgEvents, "wasm-finalize-sale", "buyer");
+    const payoutMarketPriceStr = getEventAttributeValue(msgEvents, "wasm-payout-market", "coin");
     const payoutMarketPrice = payoutMarketPriceStr && parseCoins(payoutMarketPriceStr)[0];
-    const royaltyPriceStr = getEventAttributeValue(txEvents, "wasm-payout-royalty", "coin");
+    const royaltyPriceStr = getEventAttributeValue(msgEvents, "wasm-payout-royalty", "coin");
     const royaltyPrice = royaltyPriceStr && parseCoins(royaltyPriceStr)[0];
-    const royaltyRecipient = getEventAttributeValue(txEvents, "wasm-payout-royalty", "recipient");
-    const payoutSellerPriceStr = getEventAttributeValue(txEvents, "wasm-payout-seller", "coin");
+    const royaltyRecipient = getEventAttributeValue(msgEvents, "wasm-payout-royalty", "recipient");
+    const payoutSellerPriceStr = getEventAttributeValue(msgEvents, "wasm-payout-seller", "coin");
     const payoutSellerPrice = payoutSellerPriceStr && parseCoins(payoutSellerPriceStr)[0];
 
     if (!collectionAddress) throw new Error(`Collection not found for ${tokenId}}`);
@@ -1047,9 +1046,9 @@ export class ContractIndexer extends Indexer {
     label: string,
     whitelistInfo: WhitelistInfoTx,
     dbTransaction: DbTransaction,
-    txEvents: TransactionEventWithAttributes[]
+    msgEvents: TransactionEventWithAttributes[]
   ) {
-    const whitelistAddress = getEventAttributeValue(txEvents, "instantiate", "_contract_address");
+    const whitelistAddress = getEventAttributeValue(msgEvents, "instantiate", "_contract_address");
 
     if (!whitelistAddress) throw new Error("Whitelist address not found");
     if (!admin) throw new Error("Admin not found");
