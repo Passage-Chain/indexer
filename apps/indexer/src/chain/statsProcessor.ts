@@ -111,7 +111,7 @@ class StatsProcessor {
 
             for (const transaction of block.transactions) {
               const decodeTimer = benchmark.startTimer("decodeTx");
-              const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
+              const tx = blockData.block.data.txs.find((t) => sha256(new Uint8Array(Buffer.from(t, "base64"))).toUpperCase() === transaction.hash);
 
               if (!tx) throw new Error(`Transaction ${transaction.hash} not found in block ${block.height}`);
 
@@ -123,8 +123,10 @@ class StatsProcessor {
 
                 const encodedMessage = decodedTx.body.messages[msg.index].value;
 
+                const messageEvents = transaction.events.filter((event) => event.msgIndex === msg.index);
+
                 await benchmark.measureAsync("processMessage", async () => {
-                  await this.processMessage(msg, encodedMessage, block.height, blockGroupTransaction, transaction.hasProcessingError, transaction.events);
+                  await this.processMessage(msg, encodedMessage, block.height, blockGroupTransaction, transaction.hasProcessingError, messageEvents);
                 });
 
                 if (msg.amount) {
@@ -205,12 +207,12 @@ class StatsProcessor {
     height: number,
     blockGroupTransaction: DbTransaction,
     hasProcessingError: boolean,
-    txEvents: TransactionEventWithAttributes[]
+    msgEvents: TransactionEventWithAttributes[]
   ) {
     for (const indexer of activeIndexers) {
       if (indexer.hasHandlerForType(msg.type) && (!hasProcessingError || indexer.processFailedTxs)) {
         const decodedMessage = decodeMsg(msg.type, encodedMessage);
-        await indexer.processMessage(decodedMessage, height, blockGroupTransaction, msg, txEvents);
+        await indexer.processMessage(decodedMessage, height, blockGroupTransaction, msg, msgEvents);
       }
     }
   }
